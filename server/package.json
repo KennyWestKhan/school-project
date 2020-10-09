@@ -1,0 +1,35 @@
+{
+	"name": "server",
+	"version": "1.0.0",
+	"description": "an ocr application with cms",
+	"main": "index.js",
+	"scripts": {
+		"start": "node server",
+		"server": "nodemon server",
+		"dev": "concurrently \"npm run server\" \"npm run client\"",
+		"client": "npm run serve --prefix ../client",
+		"lint": "./node_modules/.bin/eslint **/*.js",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [
+		"ocr"
+	],
+	"author": "Ken Boamponsem",
+	"license": "ISC",
+	"devDependencies": {
+		"concurrently": "^5.3.0",
+		"morgan": "^1.10.0",
+		"nodemon": "^2.0.4"
+	},
+	"dependencies": {
+		"bcrypt": "^5.0.0",
+		"body-parser": "^1.19.0",
+		"cors": "^2.8.5",
+		"dotenv": "^8.2.0",
+		"eslint": "^7.10.0",
+		"express": "^4.17.1",
+		"jsonwebtoken": "^8.5.1",
+		"lodash.isempty": "^4.4.0",
+		"mongoose": "^5.10.7"
+	}
+}
