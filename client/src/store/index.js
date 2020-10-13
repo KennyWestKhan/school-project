@@ -19,88 +19,7 @@ const state = {
 	status: "",
 	user: {},
 	snackbarInfo: {},
-	scannedDocs: [
-		{
-			id: 1,
-			extractedText:
-				"justo sollicitudin ut suscipit a feugiat et eros vestibulum ac",
-			title: "Duobam",
-			extractedTextTitle: "Enterprise-wide uniform time-frame",
-			docImage: "http://dummyimage.com/221x235.jpg/5fa2dd/ffffff",
-		},
-		{
-			id: 2,
-			extractedText:
-				"non pretium quis lectus suspendisse potenti in eleifend quam a odio in hac habitasse",
-			title: "Hatity",
-			extractedTextTitle: "Programmable directional forecast",
-			docImage: "http://dummyimage.com/192x208.png/5fa2dd/ffffff",
-		},
-		{
-			id: 3,
-			extractedText:
-				"metus aenean fermentum donec ut mauris eget massa tempor convallis nulla neque",
-			title: "Sub-Ex",
-			extractedTextTitle: "Streamlined fresh-thinking contingency",
-			docImage: "http://dummyimage.com/127x103.png/cc0000/ffffff",
-		},
-		{
-			id: 4,
-			extractedText:
-				"tempor convallis nulla neque libero convallis eget eleifend luctus ultricies",
-			title: "Wrapsafe",
-			extractedTextTitle: "Right-sized analyzing extranet",
-			docImage: "http://dummyimage.com/218x232.bmp/ff4444/ffffff",
-		},
-		{
-			id: 5,
-			extractedText:
-				"curae duis faucibus accumsan odio curabitur convallis duis consequat dui",
-			title: "Redhold",
-			extractedTextTitle: "Right-sized fresh-thinking hardware",
-			docImage: "http://dummyimage.com/238x229.bmp/cc0000/ffffff",
-		},
-		{
-			id: 6,
-			extractedText:
-				"mauris lacinia sapien quis libero nullam sit amet turpis elementum ligula vehicula",
-			title: "Duobam",
-			extractedTextTitle: "Front-line multi-state framework",
-			docImage: "http://dummyimage.com/225x151.png/5fa2dd/ffffff",
-		},
-		{
-			id: 7,
-			extractedText:
-				"odio condimentum id luctus nec molestie sed justo pellentesque viverra pede ac diam cras pellentesque volutpat dui maecenas tristique est",
-			title: "Daltfresh",
-			extractedTextTitle: "Future-proofed real-time forecast",
-			docImage: "http://dummyimage.com/164x244.jpg/dddddd/000000",
-		},
-		{
-			id: 8,
-			extractedText:
-				"elementum eu interdum eu tincidunt in leo maecenas pulvinar lobortis est",
-			title: "Stim",
-			extractedTextTitle: "Robust uniform neural-net",
-			docImage: "http://dummyimage.com/127x248.jpg/dddddd/000000",
-		},
-		{
-			id: 9,
-			extractedText:
-				"eros suspendisse accumsan tortor quis turpis sed ante vivamus tortor duis mattis egestas metus",
-			title: "Matsoft",
-			extractedTextTitle: "Streamlined demand-driven Graphic Interface",
-			docImage: "http://dummyimage.com/165x236.png/cc0000/ffffff",
-		},
-		{
-			id: 10,
-			extractedText:
-				"lectus pellentesque eget nunc donec quis orci eget orci vehicula condimentum curabitur in",
-			title: "Toughjoyfax",
-			extractedTextTitle: "Networked value-added customer loyalty",
-			docImage: "http://dummyimage.com/151x102.jpg/ff4444/ffffff",
-		},
-	],
+	scannedDocs: [],
 };
 const mutations = {
 	[AUTH_SUCCESS](state, payload) {
@@ -213,7 +132,8 @@ const actions = {
 					resolve(res.message);
 				})
 				.catch((err) => {
-					const error = err.response.data.message;
+					let error = err;
+					err = err.response ? err.response.data.message : err;
 					commit(AUTH_ERROR, error);
 					reject(error);
 				});
@@ -236,6 +156,7 @@ const getters = {
 	getLoggedInProfile: (state) => state.user,
 	getSnackBarInfo: (state) => state.snackbarInfo,
 	getScannedDocs: (state) => state.scannedDocs,
+	hasDocs: (state) => state.scannedDocs.length > 0,
 };
 
 export default new Vuex.Store({

@@ -1,6 +1,8 @@
 <template>
   <v-snackbar
     v-model="getSnackBarInfo.visibility"
+    transition="scale-transition"
+    origin="center center"
     :timeout="timeout"
     right
     top

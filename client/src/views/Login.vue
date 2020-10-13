@@ -3,6 +3,20 @@
     <v-container class="fill-height">
       <v-row align="center" justify="center">
         <v-col cols="12" sm="8" md="8" class="">
+          <div>
+            <v-alert
+              v-if="errorMsg"
+              dismissible
+              color="red"
+              border="left"
+              elevation="2"
+              colored-border
+              icon="mdi-account-remove"
+            >
+              {{ errorMsg }}
+            </v-alert>
+          </div>
+
           <v-card class="evelation-12 card">
             <v-window v-model="step">
               <!--SignIn-->
@@ -207,6 +221,7 @@
         </v-col>
       </v-row>
     </v-container>
+    <SnackBar />
     <Footer />
   </v-main>
 </template>
@@ -215,6 +230,7 @@
 const pageTitle = "Login";
 import Footer from "@/components/Footer";
 import ProgressBar from "@/components/ProgressBar";
+import SnackBar from "@/components/SnackBar";
 import { mapGetters, mapActions } from "vuex";
 export default {
   name: pageTitle,
@@ -225,12 +241,25 @@ export default {
     username: "kenny",
     email: "",
     password: "1995",
+    errorMsg: null,
   }),
   created() {},
   mounted() {
     this.logout();
   },
-  components: { Footer, ProgressBar },
+  beforeRouteEnter(to, from, next) {
+    console.log(this);
+    if (to.query.redirectFrom && to.query.message) {
+      next((vm) => {
+        const msg =
+          "Sorry, you don't have access to that page because you're not logged in";
+        vm.errorMsg = msg;
+      });
+    } else {
+      next();
+    }
+  },
+  components: { Footer, ProgressBar, SnackBar },
   props: {
     source: {
       type: String,
@@ -269,6 +298,7 @@ export default {
           })
           .catch((error) => {
             console.log(error);
+            this.errorMsg = error;
             // this.showError(error);
           })
           .finally(() => (this.loading = false));

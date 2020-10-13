@@ -1,6 +1,7 @@
 <template>
   <div>
     <v-file-input
+      id="file-upload-element"
       v-model="files"
       color="deep-purple accent-4"
       counter
@@ -10,6 +11,7 @@
       placeholder="Select your image"
       prepend-icon="mdi-paperclip"
       outlined
+      @change="fileChangeHandler"
       :show-size="1000"
     >
       <template v-slot:selection="{ index, text }">
@@ -44,6 +46,7 @@
       color="success"
       @click="loader = isLoading"
       style="float: right"
+      @click.stop="$emit('extract-text')"
     >
       Extract text
       <template v-slot:loader>
@@ -75,6 +78,12 @@ export default {
       setTimeout(() => (this[l] = false), 3000);
 
       this.isLoading = null;
+    },
+  },
+  methods: {
+    fileChangeHandler(event) {
+      console.log(event);
+      this.$emit("file-changed", event[0]);
     },
   },
 };

@@ -2,12 +2,12 @@
   <v-row justify="center">
     <v-dialog
       :value="showUploadDialog"
-      click:outside="$emit('close-upload-dialog')"
+      @click:outside="$emit('close-upload-dialog')"
       max-width="900px"
     >
       <v-card>
         <v-card-title>
-          <span class="headline">User Profile</span>
+          <!-- <span class="headline">User Profile</span> -->
         </v-card-title>
         <v-card-text>
           <v-container>

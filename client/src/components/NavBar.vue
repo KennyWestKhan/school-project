@@ -5,9 +5,9 @@
     ></v-app-bar-nav-icon>
     <!-- <v-icon class="mx-4" large>mdi-youtube</v-icon> -->
     <v-toolbar-title class="mr-12 align-center">
-      <router-link class="nav-title" :to="{ name: 'Login' }">
-        <span class>{{ componentTitle }}</span>
-      </router-link>
+      <!-- <router-link class="nav-title" :to="{ name: 'Login' }"> -->
+      <span class>{{ appName }}</span>
+      <!-- </router-link> -->
     </v-toolbar-title>
     <v-spacer></v-spacer>
     <v-row align="center" style="max-width: 350px">
@@ -15,7 +15,7 @@
         :append-icon-cb="() => {}"
         placeholder="Search..."
         single-line
-        append-icon="mdi-magnify"
+        clearable
         color="white"
         hide-details
       ></v-text-field>
@@ -28,14 +28,14 @@ export default {
   name: "NavBar",
   props: {
     drawer: Boolean,
-    username: {
+    navSearch: {
       type: String,
       default: "",
     },
   },
   data() {
     return {
-      componentTitle: "Panoptes",
+      appName: "Panoptes",
     };
   },
 };

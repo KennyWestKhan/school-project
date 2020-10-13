@@ -16,7 +16,7 @@
           <v-icon v-else> mdi-account-circle </v-icon>
         </v-btn>
       </template>
-      <v-btn fab dark small color="green" @click="$emit('open-dialog', true)">
+      <v-btn fab dark small color="voilet" @click="$emit('open-dialog', true)">
         <v-icon>mdi mdi-pencil</v-icon>
       </v-btn>
       <v-btn
@@ -28,14 +28,18 @@
       >
         <v-icon>mdi-plus</v-icon>
       </v-btn>
-      <v-btn fab dark small color="red">
+      <v-btn fab dark small color="red" v-if="hasDocs">
         <v-icon>mdi-arrow-right</v-icon>
+      </v-btn>
+      <v-btn fab dark small color="green">
+        <v-icon>mdi-camera-iris</v-icon>
       </v-btn>
     </v-speed-dial>
   </v-card>
 </template>
 
 <script>
+import { mapGetters } from "vuex";
 export default {
   data: () => ({
     direction: "top",
@@ -49,7 +53,9 @@ export default {
     transition: "slide-y-reverse-transition",
   }),
 
-  computed: {},
+  computed: {
+    ...mapGetters(["hasDocs"]),
+  },
 
   watch: {
     top(val) {

@@ -2,7 +2,7 @@ import Vue from "vue";
 import VueRouter from "vue-router";
 import Dashboard from "../views/Dashboard.vue";
 import sDocument from "../views/Document.vue";
-import Login from "../views/Login.vue";
+import middlewareLogic from "../middleWare";
 Vue.use(VueRouter);
 
 const routes = [
@@ -15,30 +15,34 @@ const routes = [
 		component: () =>
 			import(/* webpackChunkName: "about" */ "../views/About.vue"),
 	},
-	// {
-	// 	path: "/login",
-	// 	name: "Login",
-	// 	// meta: {
-	// 	// 	requiresVisitor: true,
-	// 	// },
-	// 	component: () =>
-	// 		import(/* webpackChunkName: "rootInterface" */ "../views/Login.vue"),
-	// },
 	{
-		path: "/login/",
+		path: "/",
+		redirect: {
+			name: "Login",
+		},
+	},
+	{
+		path: "/login",
 		name: "Login",
 		// meta: {
-		// 	requiresAuth: true,
+		// 	requiresVisitor: true,
 		// },
-		component: Login,
+		component: () =>
+			import(/* webpackChunkName: "rootInterface" */ "../views/Login.vue"),
+		beforeEnter: middlewareLogic.loginRouteCheck,
+	},
+
+	{
+		path: "/dashboard",
+		redirect: {
+			name: "Login",
+		},
 	},
 	{
 		path: "/dashboard/:username",
 		name: "Dashboard",
-		// meta: {
-		// 	requiresAuth: true,
-		// },
 		component: Dashboard,
+		beforeEnter: middlewareLogic.authenticateRoute,
 	},
 	{
 		path: "/document/:id",
@@ -47,6 +51,7 @@ const routes = [
 		// 	requiresAuth: true,
 		// },
 		component: sDocument,
+		// beforeEnter: middlewareLogic.authenticateRoute,
 	},
 ];
 

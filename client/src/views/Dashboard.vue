@@ -1,17 +1,14 @@
 <template>
   <v-app>
-    <Navbar
-      v-on:toggle-sidebar="drawer = $event"
-      v-bind:drawer="drawer"
-      username="this.username"
-    />
+    <Navbar v-on:toggle-sidebar="drawer = $event" v-bind:drawer="drawer" />
 
     <v-navigation-drawer v-model="drawer" app clipped>
       <v-subheader class="mt-4 grey--text text--darken-1">
-        <v-menu offset-y open-on-click>
+        <v-menu offset-y open-on-hover>
           <template v-slot:activator="{ on, attrs }">
             <v-btn color="primary" dark v-bind="attrs" v-on="on">
-              <v-icon class="">mdi-account</v-icon> Welcome, {{ username }}
+              <v-icon class="">mdi-account</v-icon> Welcome,
+              {{ username }}
             </v-btn>
           </template>
           <v-list>
@@ -59,24 +56,20 @@
           </v-list-item>
         </v-list>
 
-        <v-list-item class="mt-4" link>
+        <v-list-item class="mt-4" link @click="showfileUploadpopup = true">
           <v-list-item-action>
             <v-icon color="grey darken-1">mdi-plus-circle-outline</v-icon>
           </v-list-item-action>
-          <v-list-item-title
-            class="grey--text text--darken-1"
-            @click="showfileUploadpopup = true"
+          <v-list-item-title class="grey--text text--darken-1"
             >Add document</v-list-item-title
           >
         </v-list-item>
 
-        <v-list-item link>
+        <v-list-item link @click="settingspopup = true">
           <v-list-item-action>
             <v-icon color="grey darken-1">mdi-cog</v-icon>
           </v-list-item-action>
-          <v-list-item-title
-            class="grey--text text--darken-1"
-            @click="settingspopup = true"
+          <v-list-item-title class="grey--text text--darken-1"
             >Settings</v-list-item-title
           >
         </v-list-item>
@@ -106,7 +99,7 @@
         <v-row
           align="center"
           justify="center"
-          v-if="!this.isLoading && getScannedDocs.length == 0"
+          v-show="!isLoading && !hasDocs && !isextractingText"
           style="margin-top: 200px"
         >
           <v-col cols="12" sm="12" md="8">
@@ -115,13 +108,18 @@
                 >You don't have any scanned documents yet. Upload an image to
                 scan</span
               >
-              <Fileupload v-if="!isLoading" style="margin-top: 35px" />
+              <Fileupload
+                v-show="!isLoading"
+                @extract-text="doTextExtraction()"
+                @file-changed="srcFile = $event"
+                style="margin-top: 35px"
+              />
             </div>
           </v-col>
         </v-row>
 
         <!-- scanned documents -->
-        <v-row v-if="!isLoading && getScannedDocs.length > 0">
+        <v-row v-if="!isLoading && hasDocs">
           <v-col
             cols="12"
             sm="4"
@@ -133,6 +131,17 @@
             <Card :document="data" />
           </v-col>
         </v-row>
+
+        <!-- Extraction section -->
+
+        <v-row v-if="isextractingText">
+          <Extraction
+            @cancel-extraction="isextractingText = false"
+            :extractedText="extractedText"
+            :imgSrc="extractedTextImgSrc"
+          />
+        </v-row>
+
         <SnackBar />
         <Settings
           :settingsDialog="settingspopup"
@@ -148,6 +157,8 @@
       :showUploadDialog="showfileUploadpopup"
       @close-upload-dialog="showfileUploadpopup = false"
     />
+    <Standby :dialog="showStandbyPopUp" :status="extractingStatusMessage" />
+    <!-- <img src="../assets/testocr.png" id="imgpp" alt="" /> -->
   </v-app>
 </template>
 
@@ -160,7 +171,11 @@ import Card from "@/components/Card";
 import SnackBar from "@/components/SnackBar";
 import Settings from "@/components/Settings";
 import FloatingBtn from "@/components/FloatingBtn";
+import Extraction from "@/components/Extraction";
+import Standby from "@/components/StandbyPopUp";
 import { mapActions, mapGetters } from "vuex";
+import { createWorker, PSM, OEM } from "tesseract.js";
+
 export default {
   name: pageTitle,
   title: pageTitle,
@@ -175,9 +190,18 @@ export default {
     Settings,
     FloatingBtn,
     FileUploadPopup,
+    Extraction,
+    Standby,
   },
   data() {
     return {
+      srcFile: null,
+      extractedText: "",
+      extractedTextImgSrc: null,
+      isextractingText: false,
+      showStandbyPopUp: false,
+      extractingStatusMessage: "",
+      search: "",
       settingspopup: false,
       showfileUploadpopup: false,
       isLoading: false,
@@ -201,26 +225,7 @@ export default {
   created() {},
   mounted: function () {
     this.$nextTick(async function () {
-      this.verifyAuthToken()
-        .then((res) => {
-          if (
-            res.userDetails.username != this.$route.params.username ||
-            !res.isAuthenticated
-          ) {
-            this.doLogout();
-          } else {
-            this.username = this.$route.params.username;
-            try {
-              this.isLoading = true;
-              this.scannedDocuments = this.getScannedDocs;
-            } catch (error) {
-              console.log(error);
-            } finally {
-              this.isLoading = false;
-            }
-          }
-        })
-        .catch((err) => this.doLogout(err));
+      this.username = this.$route.params.username;
     });
   },
   methods: {
@@ -229,13 +234,72 @@ export default {
       this.logout();
       this.$router.push("/login");
     },
+    async doTextExtraction() {
+      this.showStandbyPopUp = true;
+
+      const worker = createWorker({
+        logger: (m) => {
+          console.log(m);
+          this.extractingStatusMessage =
+            m.status + "-" + (m.progress * 100).toFixed(2) + "%";
+        },
+      });
+      let img = document.createElement("img");
+      const src = URL.createObjectURL(this.srcFile);
+      img.src = src;
+
+      console.log(img);
+      await worker.load();
+      await worker.loadLanguage("eng");
+      await worker.initialize("eng", OEM.LSTM_ONLY);
+      await worker.setParameters({
+        tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
+      });
+      const {
+        data: { text },
+      } = await worker.recognize(img);
+      // document.getElementById("progress").innerHTML = text;
+      console.log(text);
+      worker.terminate();
+      if (text) {
+        this.isextractingText = true;
+        this.showStandbyPopUp = false;
+
+        this.extractedTextImgSrc = src;
+        this.extractedText = text;
+      } else {
+        this.extractingStatusMessage = "Sorry";
+      }
+    },
   },
   computed: {
-    ...mapGetters(["getLoggedInProfile", "isLoggedIn", "getScannedDocs"]),
+    ...mapGetters([
+      "getLoggedInProfile",
+      "isLoggedIn",
+      "getScannedDocs",
+      "hasDocs",
+    ]),
     getTheme: function () {
       return this.$root.vuetify.theme.isDark;
     },
+    searchDocument() {
+      if (!this.search) return this.getScannedDocs;
+
+      const search = this.search.toLowerCase();
+
+      return this.getScannedDocs.filter((item) => {
+        const text = item.title.toLowerCase();
+
+        return text.indexOf(search) > -1;
+      });
+    },
   },
+  // watch: {
+  //   standybydialog(val) {
+  //     if (!val) return;
+  //     setTimeout(() => (this.standybydialog = false), 4000);
+  //   },
+  // },
 };
 </script>
 
