@@ -10,6 +10,9 @@ import {
 	LOGOUT,
 	TOGGLE_SNACKBAR,
 	SAVE_DOCS,
+	SAVE_SPEECH_DETS,
+	SAVE_USER_SETTINGS,
+	SAVE_DOC_INFO,
 } from "./mutation-types";
 
 Vue.use(Vuex);
@@ -19,6 +22,13 @@ const state = {
 	status: "",
 	user: {},
 	snackbarInfo: {},
+	speechDetail: {
+		rate: 1,
+		pitch: 1,
+		voice: 0,
+		volume: 13,
+	},
+	userSettings: {},
 	scannedDocs: [],
 };
 const mutations = {
@@ -26,6 +36,7 @@ const mutations = {
 		state.message = payload.message;
 		state.user = payload.user;
 		state.tokenExpiry = payload.tokenExpiry;
+		state.token = payload.token;
 	},
 	[SAVE_TOKEN](state, payload) {
 		state.token = payload.token;
@@ -45,25 +56,153 @@ const mutations = {
 	[SAVE_DOCS](state, docs) {
 		state.scannedDocs = docs;
 	},
+	[SAVE_SPEECH_DETS](state, speechInfo) {
+		const { rate, pitch, voice, volume } = speechInfo;
+		state.speechDetail.rate = rate;
+		state.speechDetail.pitch = pitch;
+		state.speechDetail.voice = voice;
+		state.speechDetail.volume = volume;
+	},
+	[SAVE_USER_SETTINGS](state, speechInfo) {
+		// console.log(speechInfo);
+		state.userSettings = speechInfo;
+		// const { rate, pitch, voice } = speechInfo;
+		// state.speechDetail.rate = rate;
+		// state.speechDetail.pitch = pitch;
+		// state.speechDetail.voice = voice;
+	},
+	[SAVE_DOC_INFO](state, doc) {
+		state.doc = doc;
+	},
 };
 const actions = {
-	deleteDoc({ commit }, docId) {
-		return new Promise((resolve) => {
+	getUserDocs({ commit }) {
+		return new Promise((resolve, reject) => {
+			axios
+				.get("/documents", {
+					headers: {
+						Authorization: state.token,
+					},
+				})
+				.then((res) => {
+					const parsedResponse = dataService.parseList(res, 200);
+					const { documents } = parsedResponse;
+					let snackbarPayload = {
+						visibility: true,
+						message: res.message,
+					};
+					commit(TOGGLE_SNACKBAR, snackbarPayload);
+					commit(SAVE_DOCS, documents);
+					resolve(documents);
+				})
+				.catch((err) => {
+					console.log(err);
+					reject();
+				});
+		});
+	},
+	getDocumentDetails({ commit }, docId) {
+		return new Promise((resolve, reject) => {
+			axios
+				.get("/document/" + docId, {
+					headers: {
+						Authorization: state.token,
+					},
+				})
+				.then((res) => {
+					const parsedResponse = dataService.parseList(res, 200);
+					const { documentDetails } = parsedResponse;
+					let snackbarPayload = {
+						visibility: true,
+						message: res.message,
+					};
+					// console.log(documentDetails);
+					commit(TOGGLE_SNACKBAR, snackbarPayload);
+					commit(SAVE_DOC_INFO, documentDetails);
+					resolve(documentDetails);
+				})
+				.catch((err) => {
+					console.log(err);
+					reject();
+				});
+		});
+	},
+	getUserSettings({ commit }) {
+		return new Promise((resolve, reject) => {
+			axios
+				.get("/userSettings", {
+					headers: {
+						Authorization: state.token,
+					},
+				})
+				.then((response) => {
+					const parsedResponse = dataService.parseList(response, 200);
+					const userSettings = parsedResponse.settings;
+
+					commit(SAVE_USER_SETTINGS, userSettings);
+					resolve(userSettings);
+				})
+				.catch((error) => {
+					console.log(error);
+					reject(error);
+				});
+		});
+	},
+	saveUserSettings({ commit }, settings) {
+		return new Promise((resolve, reject) => {
+			axios
+				.post("/userSettings", settings, {
+					headers: {
+						Authorization: state.token,
+					},
+				})
+				.then((response) => {
+					commit(SAVE_SPEECH_DETS, settings);
+					resolve(response);
+				})
+				.catch((error) => {
+					console.log(error);
+					reject(error);
+				});
+		});
+	},
+	async deleteDoc({ commit }, docId) {
+		return new Promise((resolve, reject) => {
+			console.log("docId ", docId);
+			// if (docId) {
 			let docs = state.scannedDocs;
-			console.log(docId);
-			let res = false;
+			let response = null;
 			let message = "Failed to delete";
-			try {
-				docs = docs.filter((item) => item.id !== docId);
-				res = true;
-				message = `${docId} deleted!`;
-				commit(SAVE_DOCS, docs);
-			} catch (error) {
-				console.log(error);
-			}
-			let payload = { visibility: res, message: message };
-			commit(TOGGLE_SNACKBAR, payload);
-			resolve(payload);
+			let payload = { color: "red", visibility: true, message: message };
+			response = axios.delete("/document/" + docId, {
+				headers: {
+					Authorization: state.token,
+				},
+			});
+			response
+				.then((res) => {
+					res = dataService.parseList(res, res.status);
+					docs = docs.filter((item) => item._id !== docId);
+					message = `${docId} deleted!`;
+					commit(SAVE_DOCS, docs);
+					message = res.message;
+					payload.color = "green";
+					payload.visibility = true;
+					payload.message = message;
+					commit(TOGGLE_SNACKBAR, payload);
+					commit(SAVE_DOCS, docs);
+					resolve(payload);
+				})
+				.catch((err) => {
+					const errMsg = err.response.data.message;
+					payload.message = errMsg;
+					commit(TOGGLE_SNACKBAR, payload);
+					commit(AUTH_ERROR, errMsg);
+					reject(errMsg);
+				});
+			// } else {
+			// 	reject("No document id supplied");
+			// }
 		});
 	},
 	copyText({ commit }, textToCopy) {
@@ -110,6 +249,8 @@ const actions = {
 						visibility: true,
 						message: res.message,
 					};
+					const tokenPayload = { token: token };
+					commit(SAVE_TOKEN, tokenPayload);
 					commit(TOGGLE_SNACKBAR, snackbarPayload);
 					commit(AUTH_SUCCESS, payload);
 					resolve(parsedResponse);
@@ -120,7 +261,33 @@ const actions = {
 				});
 		});
 	},
-
+	register({ commit }, user) {
+		return new Promise((resolve, reject) => {
+			axios
+				.post("/register", user)
+				.then((res) => {
+					res = dataService.parseList(res, res.status);
+					const payload = { token: res.token };
+					commit(SAVE_TOKEN, payload);
+					resolve(res.message);
+					// console.log(res);
+				})
+				.catch((err) => {
+					let error = "Something went wrong. Please contact admin";
+					let adminError = "";
+					if (err.response) {
+						error = err.response.data.message;
+						adminError = err;
+					} else if (err.request) {
+						adminError = err.request;
+					} else {
+						adminError = err.request;
+					}
+					reject(error);
+					commit(AUTH_ERROR, adminError);
+				});
+		});
+	},
 	login({ commit }, user) {
 		return new Promise((resolve, reject) => {
 			axios
@@ -130,12 +297,21 @@ const actions = {
 					const payload = { token: res.token };
 					commit(SAVE_TOKEN, payload);
 					resolve(res.message);
+					console.log(res);
 				})
 				.catch((err) => {
-					let error = err;
-					err = err.response ? err.response.data.message : err;
-					commit(AUTH_ERROR, error);
+					let error = "Something went wrong. Please contact admin";
+					let adminError = "";
+					if (err.response) {
+						error = err.response.data.message;
+						adminError = err;
+					} else if (err.request) {
+						adminError = err.request;
+					} else {
+						adminError = err.request;
+					}
 					reject(error);
+					commit(AUTH_ERROR, adminError);
 				});
 		});
 	},
@@ -157,6 +333,8 @@ const getters = {
 	getSnackBarInfo: (state) => state.snackbarInfo,
 	getScannedDocs: (state) => state.scannedDocs,
 	hasDocs: (state) => state.scannedDocs.length > 0,
+	getSpeechDetail: () => state.speechDetail,
+	getUserSettings: () => state.userSettings,
 };
 
 export default new Vuex.Store({

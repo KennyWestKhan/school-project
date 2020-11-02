@@ -2,15 +2,20 @@ const isEmpty = require("lodash.isempty");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 
-const processEmptyRequest = (req, res, msg) => {
-	if (isEmpty(req.body)) {
+const checkIfEmpty = (body, res, next, msg) => {
+	if (isEmpty(body)) {
 		msg = msg || "Payload can't be empty";
-		console.log(msg);
-		res.status(204).json({
-			message: msg,
-		});
+		next(msg);
+		return true;
+	} else {
+		return false;
 	}
 };
+
+function logErrors(err, req, res, next) {
+	console.error(err.stack);
+	next(err);
+}
 
 const handleErrorResponse = (params) => {
 	let { err, res, msg, status } = params;
@@ -50,8 +55,42 @@ const isAuthReq = (sessionID) => {
 		return false;
 	}
 };
+
+function userIsAuth(req, res) {
+	const token = req.headers.authorization;
+	let auth = false;
+	// console.info("token " + token);
+	if (token == null) {
+		return {
+			auth: auth,
+			message: "No token supplied",
+		};
+	}
+	const resp = isAuthReq(token);
+	if (!resp.authenticated) {
+		return {
+			auth: auth,
+			message: "Token expired",
+		};
+	}
+
+	return {
+		auth: true,
+		data: resp,
+	};
+}
+const retrieveToken = (request) => {
+	if (request) {
+		return request.headers.authorization;
+	}
+	return "No token supplied";
+};
+
 exports.isAuthReq = isAuthReq;
 exports.verifyToken = verifyToken;
 exports.generateJWTToken = generateJWTToken;
-exports.processEmptyReq = processEmptyRequest;
+exports.checkIfEmpty = checkIfEmpty;
 exports.handleErrorResponse = handleErrorResponse;
+exports.retrieveToken = retrieveToken;
+exports.logErrors = logErrors;
+exports.userIsAuth = userIsAuth;

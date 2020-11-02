@@ -6,9 +6,9 @@
     :timeout="timeout"
     right
     top
-    color="blue"
+    :color="getSnackBarInfo.color ? getSnackBarInfo.color : 'blue'"
   >
-    {{ getSnackBarInfo.message ? getSnackBarInfo.message : "Welcome " }}
+    {{ getSnackBarInfo.message ? getSnackBarInfo.message : message }}
 
     <template v-slot:action="{ attrs }">
       <v-btn color="green" text v-bind="attrs"> x </v-btn>
@@ -23,7 +23,9 @@ export default {
   data: () => ({
     timeout: 2000,
   }),
-  props: {},
+  props: {
+    message: { type: String, Default: "Welcome" },
+  },
   computed: { ...mapGetters(["getSnackBarInfo"]) },
 };
 </script>

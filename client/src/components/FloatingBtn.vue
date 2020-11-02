@@ -16,18 +16,38 @@
           <v-icon v-else> mdi-account-circle </v-icon>
         </v-btn>
       </template>
-      <v-btn fab dark small color="voilet" @click="$emit('open-dialog', true)">
-        <v-icon>mdi mdi-pencil</v-icon>
-      </v-btn>
-      <v-btn
-        fab
-        dark
-        small
-        color="indigo"
-        @click="$emit('open-file-upload-diaload', true)"
-      >
-        <v-icon>mdi-plus</v-icon>
-      </v-btn>
+      <v-tooltip left>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            v-bind="attrs"
+            v-on="on"
+            fab
+            dark
+            small
+            color="voilet"
+            @click="$emit('fl-btn-settings-popup', true)"
+          >
+            <v-icon>mdi-cog</v-icon>
+          </v-btn>
+        </template>
+        <span>Settings</span>
+      </v-tooltip>
+      <v-tooltip left>
+        <template v-slot:activator="{ on, attrs }">
+          <v-btn
+            v-bind="attrs"
+            v-on="on"
+            fab
+            dark
+            small
+            color="indigo"
+            @click="$emit('open-file-upload-diaload', true)"
+          >
+            <v-icon>mdi-plus</v-icon>
+          </v-btn>
+        </template>
+        <span>Extract text</span>
+      </v-tooltip>
       <v-btn fab dark small color="red" v-if="hasDocs">
         <v-icon>mdi-arrow-right</v-icon>
       </v-btn>

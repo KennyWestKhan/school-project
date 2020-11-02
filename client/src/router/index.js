@@ -1,7 +1,7 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
 import Dashboard from "../views/Dashboard.vue";
-import sDocument from "../views/Document.vue";
+// import sDocument from "../views/Document.vue";
 import middlewareLogic from "../middleWare";
 Vue.use(VueRouter);
 
@@ -47,11 +47,9 @@ const routes = [
 	{
 		path: "/document/:id",
 		name: "Document",
-		// meta: {
-		// 	requiresAuth: true,
-		// },
-		component: sDocument,
-		// beforeEnter: middlewareLogic.authenticateRoute,
+		component: () =>
+			import(/* webpackChunkName: "docInterface" */ "../views/Document.vue"),
+		beforeEnter: middlewareLogic.authenticateRoute,
 	},
 ];
 

@@ -23,9 +23,9 @@ const today = new Date();
 const accountSchema = new mongoose.Schema({
 	created: { type: Date, required: true, default: today },
 	profilePicture: { type: String },
+	age: { type: Number, required: true },
 	username: { type: String, required: true, validate: sizeValidator },
-	firstName: { type: String, required: true, validate: sizeValidator },
-	lastName: { type: String, required: true, validate: sizeValidator },
+	usage: { type: String, required: true, validate: sizeValidator },
 	email: { type: String, required: true, validate: emailValidator },
 	password: { type: String, required: true, validate: passwordValidator },
 	isActive: { type: Boolean, required: true, default: true },

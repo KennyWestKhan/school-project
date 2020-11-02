@@ -1,17 +1,24 @@
+//Load env
+require("dotenv").config({ path: "config.env" });
+// console.log(process.env);
 const express = require("express");
 const app = express();
 const api = require("./api");
+const logErrors = require("./shared");
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 
-//Load env
-require("dotenv").config({ path: "config.env" });
+// function logErrors(err, req, res, next) {
+// 	console.error(err.stack);
+// 	next(err);
+// }
 
+app.use(cors());
 const port = process.env.SERVER_PORT || 8085;
 const dbport = process.env.DB_PORT || 27018;
 const connectionPath = `${process.env.DB_HOST}:${dbport}/${process.env.DB_NAME}`;
-app.use(cors());
+console.info("connection path " + connectionPath);
 app.set("port", port);
 
 app.use(bodyParser.json());
@@ -45,7 +52,7 @@ const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error"));
 db.once("open", function () {
 	console.log("mongodb open");
-	app.listen(app.get("port"), function () {
+	app.listen(port, function () {
 		console.log("API SERVER LISTENING ON PORT " + app.get("port") + "!");
 	});
 });

@@ -1,20 +1,66 @@
 <template>
-  <v-container class="grey lighten-5">
-    <v-row no-gutters>
-      <v-col v-for="n in 3" :key="n" cols="12" sm="4">
-        <v-card class="pa-2" outlined tile> One of three columns </v-card>
-      </v-col>
-    </v-row>
-  </v-container>
+  <div>
+    <v-app>
+      <NaBarNavG
+        @show-file-uploadpopup="showfileUploadpopup = $event"
+        @settings-popup="settingspopup = true"
+      />
+      <v-main>
+        <v-container fluid class="grey lighten-5">
+          <v-row>
+            <Extraction
+              @cancel-extraction="doCancelExtraction"
+              :extractedText="extractedText"
+              :imgSrc="extractedTextImgSrcDetails"
+            />
+          </v-row>
+        </v-container>
+      </v-main>
+    </v-app>
+  </div>
 </template>
 <script>
+import NaBarNavG from "@/components/NavBarNavigators";
+import Extraction from "@/components/Extraction";
+import { mapActions } from "vuex";
 export default {
   name: "Document",
   data() {
-    return {};
+    return {
+      extractedText: "",
+      documentId: null,
+      name: "",
+      caption: "",
+      createdOn: null,
+      extractedTextImgSrcDetails: {
+        src: localStorage.getItem("filedets"),
+      },
+    };
   },
   mounted() {
     console.log(this.$route.params.id);
+  },
+  components: {
+    NaBarNavG,
+    Extraction,
+  },
+  methods: {
+    ...mapActions(["getDocumentDetails"]),
+    doCancelExtraction() {
+      // this.isextractingText = false;
+      window.location = "/";
+    },
+  },
+  async created() {
+    this.documentId = this.$route.params.id;
+
+    await this.getDocumentDetails(this.documentId).then((res) => {
+      const { title, extractedText, createdOn } = res;
+      this.name = title.name;
+      this.caption = title.caption;
+      this.extractedText = extractedText;
+      this.createdOn = createdOn;
+    });
   },
 };
 </script>
