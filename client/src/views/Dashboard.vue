@@ -3,6 +3,7 @@
     <NaBarNavG
       @show-file-uploadpopup="showfileUploadpopup = $event"
       @settings-popup="settingspopup = true"
+      :settingspopup="settingspopup"
     />
     <!-- navbar -->
 
@@ -77,7 +78,7 @@
       </v-container>
     </v-main>
     <FloatingBtn
-      @fl-btn-settings-popup="$emit('settings-popup', true)"
+      @fl-btn-settings-popup="settingspopup = true"
       @open-file-upload-diaload="showfileUploadpopup = true"
     />
     <FileUploadPopup

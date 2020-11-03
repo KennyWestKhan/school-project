@@ -176,6 +176,7 @@ export default {
           speechObj.dataName = voices[i].name;
           // console.log(i);
           this.speechVoices.push(speechObj);
+          console.log(this.speechVoices);
         }
       } else {
         console.log("not available");
