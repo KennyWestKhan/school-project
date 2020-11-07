@@ -73,6 +73,7 @@ export default {
     srcFile: null,
     isLoading: false,
     extractingStatusMessage: "",
+    worker: null,
     rules: [
       (value) =>
         !value ||
@@ -91,7 +92,21 @@ export default {
       this.isLoading = null;
     },
   },
+  created() {
+    this.initializeWorker();
+  },
   methods: {
+    initializeWorker() {
+      this.worker = createWorker({
+        logger: (m) => {
+          // console.log(m);
+          let progress = (m.progress * 100).toFixed(2);
+          this.extractingStatusMessage =
+            this.rewriteStatusMsg(m.status) + "-" + progress + "%";
+          this.$emit("show-progress", progress);
+        },
+      });
+    },
     rewriteStatusMsg(msg) {
       console.log(msg);
       switch (msg) {
@@ -99,10 +114,10 @@ export default {
           msg = "Breaking ice. Please wait...";
           break;
         case "initializing tesseract":
-          msg = "solving world peace";
+          msg = "creating world peace";
           break;
         case "initialized tesseract":
-          msg = "searching for the infinity stones";
+          msg = "Retrieved the infinity stones";
           break;
         case "loading language traineddata":
           msg = "Learning our ABCs";
@@ -119,33 +134,24 @@ export default {
       console.log("extracting");
       this.showStandbyPopUp = true;
 
-      const worker = createWorker({
-        logger: (m) => {
-          console.log(m);
-          let progress = (m.progress * 100).toFixed(2);
-          this.extractingStatusMessage =
-            this.rewriteStatusMsg(m.status) + "-" + progress + "%";
-          this.$emit("show-progress", progress);
-        },
-      });
       let img = document.createElement("img");
 
       this.filename = this.srcFile["name"];
       const src = URL.createObjectURL(this.srcFile);
       img.id = "hidden-image-ele";
       img.src = src;
-      // document.body.appendChild(img);
-
-      console.log(img);
-      await worker.load();
-      await worker.loadLanguage("eng");
-      await worker.initialize("eng", OEM.LSTM_ONLY);
-      await worker.setParameters({
+      if (!this.worker) {
+        this.initializeWorker();
+      }
+      await this.worker.load();
+      await this.worker.loadLanguage("eng");
+      await this.worker.initialize("eng", OEM.LSTM_ONLY);
+      await this.worker.setParameters({
         tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
       });
       const {
         data: { text },
-      } = await worker.recognize(img);
+      } = await this.worker.recognize(img);
       console.log(text);
 
       if (text) {
@@ -161,13 +167,10 @@ export default {
       }
       this.$emit("show-progress", 0);
       URL.revokeObjectURL(src);
-      worker.terminate();
+      this.worker.terminate();
     },
     fileChangeHandler(event) {
-      console.log(event);
       this.srcFile = event[0];
-      console.log(this.srcFile);
-      localStorage.setItem("filedets", this.srcFile);
       this.$emit("file-changed", event[0]);
     },
   },

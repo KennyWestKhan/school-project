@@ -82,7 +82,7 @@
     </v-navigation-drawer>
     <Settings
       v-if="settingspopup"
-      :settingsDialog="settingspopup"
+      :settingsDialog="settingspopup || settingspopupProp"
       @close-dialog="settingspopup = false"
       @display-settings-saved-resp="
         message = $event;
@@ -120,10 +120,10 @@ export default {
     };
   },
   props: {
-    // drawer: {
-    //   type: Boolean,
-    //   default: false,
-    // },
+    settingspopupProp: {
+      type: Boolean,
+      default: false,
+    },
   },
   components: { Navbar, Settings },
   mounted: function () {

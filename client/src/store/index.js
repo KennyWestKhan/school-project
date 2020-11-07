@@ -25,7 +25,7 @@ const state = {
 	speechDetail: {
 		rate: 1,
 		pitch: 1,
-		voice: 0,
+		voice: 2 ,
 		volume: 13,
 	},
 	userSettings: {},
@@ -169,7 +169,9 @@ const actions = {
 	async deleteDoc({ commit }, docId) {
 		return new Promise((resolve, reject) => {
 			console.log("docId ", docId);
-			// if (docId) {
+			if (!docId) {
+				reject("No valid document id");
+			}
 			let docs = state.scannedDocs;
 			let response = null;
 			let message = "Failed to delete";

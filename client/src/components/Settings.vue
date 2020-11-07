@@ -151,6 +151,7 @@ export default {
         voice: this.selectedVoice,
         pushNotifications: !!this.pushNotifications,
       };
+
       await this.saveUserSettings(settings)
         .then((msg) => this.$emit("close-dialog", msg))
         .catch((error) => console.log(error));
@@ -167,16 +168,14 @@ export default {
           // console.log(voices[i]);
           const speechObj = {};
           speechObj.name = voices[i].name + " (" + voices[i].lang + ")";
-
-          if (voices[i].default) {
-            speechObj.name = " -- DEFAULT";
-          }
+          // if (voices[i].default) {
+          //   speechObj.name = "DEFAULT";
+          // }
           speechObj.voiceID = i;
           speechObj.dataLang = voices[i].lang;
           speechObj.dataName = voices[i].name;
           // console.log(i);
           this.speechVoices.push(speechObj);
-          console.log(this.speechVoices);
         }
       } else {
         console.log("not available");
@@ -189,7 +188,7 @@ export default {
   computed: {
     // ...mapGetters(["getSpeechDetail"]),
   },
-  async created() {
+  created: async function () {
     this.populateVoiceList();
     const res = await this.getUserSettings();
     const retSettings = res.userSettings;

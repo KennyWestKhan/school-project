@@ -1,10 +1,10 @@
 //Load env
 require("dotenv").config({ path: "config.env" });
-// console.log(process.env);
+
 const express = require("express");
 const app = express();
 const api = require("./api");
-const logErrors = require("./shared");
+const { logErrors, getDeviceIp } = require("./shared");
 const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -17,8 +17,17 @@ const cors = require("cors");
 app.use(cors());
 const port = process.env.SERVER_PORT || 8085;
 const dbport = process.env.DB_PORT || 27018;
-const connectionPath = `${process.env.DB_HOST}:${dbport}/${process.env.DB_NAME}`;
-console.info("connection path " + connectionPath);
+const connectionPath = `mongodb://${process.env.DB_HOST}:${dbport}/${process.env.DB_NAME}`;
+const remoteConnectionPath =
+	"mongodb+srv://kenny:Pideck98@panoptes.k3xpc.mongodb.net/panoptes";
+let path = connectionPath;
+let host = "localhost";
+if (true) {
+	path = remoteConnectionPath;
+	host = getDeviceIp();
+}
+
+console.info("connection path " + path);
 app.set("port", port);
 
 app.use(bodyParser.json());
@@ -38,7 +47,7 @@ app.use(function (req, res, next) {
 
 const mongoose = require("mongoose");
 mongoose
-	.connect(`mongodb://${connectionPath}`, {
+	.connect(`${path}`, {
 		useUnifiedTopology: true,
 		useNewUrlParser: true,
 	})
@@ -52,7 +61,8 @@ const db = mongoose.connection;
 db.on("error", console.error.bind(console, "connection error"));
 db.once("open", function () {
 	console.log("mongodb open");
-	app.listen(port, function () {
+	const server = app.listen(port, host, function () {
 		console.log("API SERVER LISTENING ON PORT " + app.get("port") + "!");
+		console.log("API HOSTNAME " + server.address().address + "!");
 	});
 });

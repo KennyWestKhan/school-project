@@ -11,7 +11,6 @@
             <Extraction
               @cancel-extraction="doCancelExtraction"
               :extractedText="extractedText"
-              :imgSrc="extractedTextImgSrcDetails"
             />
           </v-row>
         </v-container>
@@ -32,9 +31,6 @@ export default {
       name: "",
       caption: "",
       createdOn: null,
-      extractedTextImgSrcDetails: {
-        src: localStorage.getItem("filedets"),
-      },
     };
   },
   mounted() {

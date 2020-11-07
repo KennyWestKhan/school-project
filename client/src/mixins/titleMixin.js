@@ -1,4 +1,3 @@
-
 function getTitle(vm) {
 	const { title } = vm.$options;
 	if (title) {
@@ -6,7 +5,7 @@ function getTitle(vm) {
 	}
 }
 export default {
-	created() {
+	created: function() {
 		const title = getTitle(this);
 		if (title) {
 			document.title = `${title} | Panoptes`;

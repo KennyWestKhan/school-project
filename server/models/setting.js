@@ -24,7 +24,7 @@ const settingsSchema = new mongoose.Schema({
 	userSettings: {
 		speech: {
 			rate: { type: Number, default: 1 },
-			volume: { type: Number, default: 11 },
+			volume: { type: Number, default: 10 },
 			pitch: { type: Number, default: 1 },
 			voice: { type: Number, default: 0 },
 		},

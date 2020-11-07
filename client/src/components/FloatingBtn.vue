@@ -7,7 +7,6 @@
       :right="right"
       :left="left"
       :direction="direction"
-      :open-on-hover="hover"
       :transition="transition"
     >
       <template v-slot:activator>
@@ -51,7 +50,7 @@
       <v-btn fab dark small color="red" v-if="hasDocs">
         <v-icon>mdi-arrow-right</v-icon>
       </v-btn>
-      <v-btn fab dark small color="green">
+      <v-btn fab dark small color="green" @click="$emit('show-camera')">
         <v-icon>mdi-camera-iris</v-icon>
       </v-btn>
     </v-speed-dial>

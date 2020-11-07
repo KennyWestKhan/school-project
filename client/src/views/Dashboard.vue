@@ -3,7 +3,7 @@
     <NaBarNavG
       @show-file-uploadpopup="showfileUploadpopup = $event"
       @settings-popup="settingspopup = true"
-      :settingspopup="settingspopup"
+      :settingspopupProp="settingspopup"
     />
     <!-- navbar -->
 
@@ -11,7 +11,7 @@
       <v-container fluid>
         <v-row>
           <div cols="12" sm="4" md="4" class="blockquote">
-            <h3>Scanned documents</h3>
+            <h3 v-if="hasDocs && !showCamera">Scanned documents</h3>
           </div>
         </v-row>
 
@@ -29,10 +29,10 @@
         <v-row
           align="center"
           justify="center"
-          v-show="!isLoading && !hasDocs && !isextractingText"
+          v-show="!isLoading && !hasDocs && !isextractingText && !showCamera"
           style="margin-top: 200px"
         >
-          <v-col cols="12" sm="12" md="8">
+          <v-col cols="12" sm="8" md="8">
             <div class="fileuploadsect">
               <span style="padding: 33px; color: #525658"
                 >You don't have any scanned documents yet. Upload an image to
@@ -52,7 +52,7 @@
         </v-row>
 
         <!-- scanned documents -->
-        <v-row v-if="!isextractingText && !isLoading && hasDocs">
+        <v-row v-if="!isextractingText && !isLoading && hasDocs && !showCamera">
           <v-col
             cols="12"
             sm="4"
@@ -64,6 +64,12 @@
             <Card :document="data" />
           </v-col>
         </v-row>
+
+        <Camera
+          v-if="showCamera"
+          :showCamera="showCamera"
+          @cancel-camera="showCamera = false"
+        />
 
         <!-- Extraction section -->
         <v-row v-if="isextractingText">
@@ -80,6 +86,7 @@
     <FloatingBtn
       @fl-btn-settings-popup="settingspopup = true"
       @open-file-upload-diaload="showfileUploadpopup = true"
+      @show-camera="showCamera = true"
     />
     <FileUploadPopup
       :showUploadDialog="showfileUploadpopup"
@@ -94,8 +101,6 @@
       :buffer-value="showProgress"
       color="cyan darken-2"
     ></v-progress-linear>
-
-    <!-- <img src="../assets/testocr.png" id="imgpp" alt="" /> -->
   </v-app>
 </template>
 
@@ -103,6 +108,7 @@
 const pageTitle = "Dashboard";
 
 import Fileupload from "@/components/Fileupload";
+import Camera from "@/components/Camera";
 import FileUploadPopup from "@/components/FileUploadPopup";
 import Card from "@/components/Card";
 import SnackBar from "@/components/SnackBar";
@@ -123,7 +129,7 @@ export default {
     Fileupload,
     Card,
     SnackBar,
-
+    Camera,
     FloatingBtn,
     FileUploadPopup,
     Extraction,
@@ -133,6 +139,7 @@ export default {
     return {
       showProgress: 0,
       isextractingText: false,
+      showCamera: false,
       filename: "",
       extractedText: "",
       extractedTextImgSrcDetails: null,
@@ -149,7 +156,7 @@ export default {
     };
   },
   beforeCreate() {},
-  created() {
+  created: function () {
     this.scannedDocuments = this.getUserDocs();
   },
   mounted: function () {

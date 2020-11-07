@@ -131,6 +131,7 @@ module.exports = function (router) {
 					{ isLoggedIn: 0, created: 0 }
 				)
 				.then((userDB) => {
+					console.log(userDB);
 					if (userDB) {
 						if (bcrypt.compareSync(req.body.password, userDB.password)) {
 							const payload = {

@@ -9,12 +9,12 @@
           tile
           :elevation="elevation"
         >
-          <!-- <v-img
+          <v-img
             class="white--text align-end"
             max-height="100%"
             :src="getImageSrc"
           >
-          </v-img> -->
+          </v-img>
         </v-card>
       </v-col>
       <v-col cols="12" sm="6" md="6">
@@ -102,12 +102,14 @@
                     label="Document title*"
                     v-model="docTitle"
                     required
+                    :rules="inputRules.filetitle"
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12">
                   <v-text-field
                     label="Document caption*"
                     v-model="docCaption"
+                    :rules="inputRules.caption"
                   ></v-text-field>
                 </v-col>
                 <v-col cols="12" sm="6">
@@ -168,15 +170,28 @@ export default {
           clBk: "",
         },
       ],
+      inputRules: {
+        caption: [
+          (val) =>
+            (val || "").length > 0 || "Please enter caption for the image",
+        ],
+        filetitle: [
+          (val) => (val || "").length > 0 || "Please enter name for document",
+        ],
+      },
     };
   },
   props: ["extractedText", "imgSrc"],
   components: { Standby },
   computed: {
     getImageSrc() {
-      const imgsrc = URL.createObjectURL(this.imgSrc);
-      localStorage.setItem("imgsrc", imgsrc);
-      URL.revokeObjectURL(this.imgSrc);
+      let imgsrc;
+      if (this.imgSrc) {
+        imgsrc = URL.createObjectURL(this.imgSrc);
+        URL.revokeObjectURL(this.imgSrc);
+      } else {
+        imgsrc = "https://cdn.vuetifyjs.com/images/cards/sunshine.jpg";
+      }
       return imgsrc;
     },
     getHeight(elementId) {
@@ -184,18 +199,24 @@ export default {
       const elementDetails = document.getElementById(`'${elementId}'`);
       return elementDetails.offsetHeight;
     },
+
     ...mapGetters(["getSpeechDetail"]),
   },
   mounted() {
     this.$nextTick(async function () {
+      const nameWithoutExt = this.removeFileExtension(this.imgSrc.name);
+      this.docTitle = nameWithoutExt ? nameWithoutExt : this.imgSrc.name;
       this.getUserSettings();
     });
   },
   methods: {
     ...mapActions(["getUserSettings", "getUserDocs"]),
+    removeFileExtension(filename) {
+      console.log(filename);
+      return filename.split(".").slice(0, -1).join(".");
+    },
     async readExtractedText() {
       this.toggleAction();
-      this.initialisePopUp();
       let speech = new SpeechSynthesisUtterance();
       let voices = speechSynthesis.getVoices();
       let speechSettings = this.getSpeechDetail;
@@ -207,7 +228,7 @@ export default {
       if (this.startAction) {
         speech.lang = "en-US";
         let textInDiv = document.getElementById("extractedTextDiv").innerText;
-
+        this.initialisePopUp("start");
         if (textInDiv.length <= 2) {
           textInDiv = this.extractedText;
         }
@@ -254,51 +275,52 @@ export default {
         this.actionText = "READ";
       }
     },
-    initialisePopUp(action) {
-      action = action || "start";
-      if (action == "start") {
+    initialisePopUp(action, msg) {
+      // action = action || "start";
+      msg = msg || "Clearing my throat";
+      if (action === "start") {
         this.showStandbyPopUp = true;
-        this.extractingStatusMessage = "Clearing my throat";
+        this.extractingStatusMessage = msg;
       } else {
         this.showStandbyPopUp = this.extractingStatusMessage = null;
       }
     },
     saveDoc() {
       console.log("SAVING");
-      // if (this.extractedText) {
-      const userDocs = {
-        extractedText: this.extractedText,
-        caption: this.docCaption,
-        title: this.docTitle,
-        status: this.docStatus,
-      };
-      let payload = {
-        visibility: true,
-      };
-      let message;
-      axios
-        .post("/document", userDocs, {
-          headers: {
-            Authorization: localStorage.getItem("token"),
-          },
-        })
-        .then((response) => {
-          if (response.status === 200) {
-            console.log(response.data);
-            this.stopRead;
-            payload.message = message = response.data.message;
-            payload.color = "green";
-            this.$emit("cancel-extraction", message);
-            this.getUserDocs();
-          }
-        })
-        .catch((error) => {
-          payload.message = message = error.message;
+      if (this.docTitle) {
+        const userDocs = {
+          extractedText: this.extractedText,
+          caption: this.docCaption,
+          title: this.docTitle,
+          status: this.docStatus,
+        };
+        let payload = {
+          visibility: true,
+        };
+        let message;
+        axios
+          .post("/document", userDocs, {
+            headers: {
+              Authorization: localStorage.getItem("token"),
+            },
+          })
+          .then((response) => {
+            if (response.status === 200) {
+              console.log(response.data);
+              this.stopRead;
+              payload.message = message = response.data.message;
+              payload.color = "green";
+              this.$emit("cancel-extraction", message);
+              this.getUserDocs();
+            }
+          })
+          .catch((error) => {
+            payload.message = message = error.message;
 
-          console.log(error);
-        })
-        .finally(() => this.$store.commit("toggle_snackbar", payload));
-      // }
+            console.log(error);
+          })
+          .finally(() => this.$store.commit("toggle_snackbar", payload));
+      }
     },
   },
 };

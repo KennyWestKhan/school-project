@@ -61,7 +61,7 @@
                           clearable
                           required
                         />
-                        <div class="text-center">
+                        <!-- <div class="text-center">
                           <a
                             href="#"
                             class="mt-3 overline no-text-decoration"
@@ -70,7 +70,7 @@
                           >
                             Forgot your password?
                           </a>
-                        </div>
+                        </div> -->
                         <div class="text-center mt-6">
                           <v-btn type="submit" large :color="bgColor" dark
                             >Sign In</v-btn
@@ -282,7 +282,6 @@
                         <v-text-field
                           id="login"
                           :rules="rules.usage"
-                          v-model="login"
                           label="Username / email"
                           name="login"
                           append-icon="person / email"
@@ -348,7 +347,7 @@ export default {
       ],
     },
   }),
-  created() {},
+  created: function () {},
   mounted() {
     this.logout();
   },
@@ -466,6 +465,9 @@ export default {
 </script>
 
 <style scoped>
+.v-application--wrap {
+  min-height: 90vh !important;
+}
 .v-input__icon--double .v-input__icon {
   margin-left: -4.25rem !important;
 }

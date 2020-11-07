@@ -4,7 +4,7 @@
       <v-img :src="docImage" height="200px"></v-img>
 
       <v-card-title>
-        {{ document.title.name }}
+        {{ truncateExtractedText(document.title.name, "26") }}
       </v-card-title>
 
       <v-card-subtitle>
@@ -24,10 +24,7 @@
               v-bind="attrs"
               v-on="on"
               text
-              @click="
-                selectedDoc = { id: document._id, name: document.title.name };
-                confirmDelete = true;
-              "
+              @click="handleDelete(document._id, document.title.name)"
             >
               DELETE
             </v-btn>
@@ -88,7 +85,7 @@ export default {
       type: Object,
     },
   },
-  created() {},
+  created: function () {},
   components: {
     Standby,
     ConfirmDeletePopUp,
@@ -107,7 +104,12 @@ export default {
     doCopy: async function (str) {
       await this.copyText(str);
     },
-    async doDelete() {
+    handleDelete: function (id, name) {
+      console.log(id, name);
+      this.selectedDoc = { id, name };
+      this.confirmDelete = true;
+    },
+    doDelete: async function () {
       this.showStandbyPopUp = true;
       this.statusMessage = "Deleting document. Please wait..";
       await this.deleteDoc(this.selectedDoc.id)
@@ -117,7 +119,7 @@ export default {
           this.selectedDoc = null;
         });
     },
-    documentUrl(id) {
+    documentUrl: function (id) {
       return "/document/" + id;
     },
   },

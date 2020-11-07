@@ -1,6 +1,26 @@
 const isEmpty = require("lodash.isempty");
 const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
+const { networkInterfaces } = require("os");
+
+function getDeviceIp() {
+	const nets = networkInterfaces();
+	const results = Object.create(null); // or just '{}', an empty object
+
+	for (const name of Object.keys(nets)) {
+		for (const net of nets[name]) {
+			// skip over non-ipv4 and internal (i.e. 127.0.0.1) addresses
+			if (net.family === "IPv4" && !net.internal) {
+				if (!results[name]) {
+					results[name] = [];
+				}
+
+				results[name].push(net.address);
+			}
+		}
+	}
+	return results.en0[0];
+}
 
 const checkIfEmpty = (body, res, next, msg) => {
 	if (isEmpty(body)) {
@@ -86,6 +106,22 @@ const retrieveToken = (request) => {
 	return "No token supplied";
 };
 
+function handleCors(req, res, callback) {
+	res.setHeader("Access-Control-Allow-Origin", "*");
+	res.setHeader(
+		"Access-Control-Allow-Methods",
+		"GET, POST, PUT, DELETE,OPTIONS"
+	);
+	res.setHeader("Access-Control-Allow-Headers", "Authorization");
+
+	// CORS OPTIONS request, simply return 200
+	if (req.method == "OPTIONS") {
+		res.statusCode = 200;
+		res.end();
+		callback.onOptions();
+		return;
+	}
+}
 exports.isAuthReq = isAuthReq;
 exports.verifyToken = verifyToken;
 exports.generateJWTToken = generateJWTToken;
@@ -94,3 +130,5 @@ exports.handleErrorResponse = handleErrorResponse;
 exports.retrieveToken = retrieveToken;
 exports.logErrors = logErrors;
 exports.userIsAuth = userIsAuth;
+exports.handleCors = handleCors;
+exports.getDeviceIp = getDeviceIp;
