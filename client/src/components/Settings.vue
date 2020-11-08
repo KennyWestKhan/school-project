@@ -25,6 +25,21 @@
               <v-subheader>User Controls</v-subheader>
               <v-list-item v-if="voiceVolume != null && selectedVoice != null">
                 <v-list-item-content>
+                  <v-list-item-subtitle
+                    ><v-select
+                      v-model="selectedExtractingLang"
+                      :eager="true"
+                      no-data-text="No lang"
+                      hint="Language to look out for when extracting text from your images"
+                      :items="this.languages"
+                      item-text="name"
+                      item-value="langID"
+                      menu-props="auto"
+                      label="Select  extracting language"
+                      prepend-icon="mdi-account-settings"
+                    ></v-select
+                  ></v-list-item-subtitle>
+
                   <v-list-item-title>Select voice </v-list-item-title>
                   <v-list-item-subtitle
                     ><v-select
@@ -35,9 +50,7 @@
                       :items="this.speechVoices"
                       item-text="name"
                       item-value="voiceID"
-                      menu-props="auto"
                       label="Select voice for text reading"
-                      hide-details
                       prepend-icon="mdi-account-settings"
                       single-line
                     ></v-select
@@ -125,6 +138,7 @@ export default {
       notifications: false,
       speechVoices: [],
       selectedVoice: null,
+      selectedExtractingLang: "en",
       speechInfo: {},
       sound: true,
       e1: "Alice",
@@ -133,6 +147,11 @@ export default {
       voicePitch: null,
       voiceRate: null,
       pushNotifications: null,
+      languages: [
+        { name: "English", langID: "eng" },
+        { name: "Chinese", langID: "Ch" },
+        { name: "Russian", langID: "Ru" },
+      ],
       rules: [(v) => v <= 60 || "Above 60 might harm your hearing"],
     };
   },
@@ -150,6 +169,7 @@ export default {
         pitch: this.voicePitch,
         voice: this.selectedVoice,
         pushNotifications: !!this.pushNotifications,
+        extractingLang: this.selectedExtractingLang,
       };
 
       await this.saveUserSettings(settings)
@@ -193,12 +213,14 @@ export default {
     const res = await this.getUserSettings();
     const retSettings = res.userSettings;
     const { rate, pitch, voice, volume } = retSettings.speech;
-    const { notifications } = retSettings;
+    const { notifications, extractingLang } = retSettings;
     this.pushNotifications = !!notifications.pushNotifications;
     this.voiceVolume = volume;
     this.voiceRate = rate;
     this.voicePitch = pitch;
     this.selectedVoice = voice;
+    console.log(extractingLang);
+    this.selectedExtractingLang = extractingLang;
     console.log(rate, pitch, voice);
   },
   mounted() {

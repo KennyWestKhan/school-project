@@ -25,8 +25,9 @@ const state = {
 	speechDetail: {
 		rate: 1,
 		pitch: 1,
-		voice: 2 ,
+		voice: 2,
 		volume: 13,
+		selectedExtractingLang: "eng",
 	},
 	userSettings: {},
 	scannedDocs: [],
@@ -57,11 +58,12 @@ const mutations = {
 		state.scannedDocs = docs;
 	},
 	[SAVE_SPEECH_DETS](state, speechInfo) {
-		const { rate, pitch, voice, volume } = speechInfo;
+		const { rate, pitch, voice, volume, selectedExtractingLang } = speechInfo;
 		state.speechDetail.rate = rate;
 		state.speechDetail.pitch = pitch;
 		state.speechDetail.voice = voice;
 		state.speechDetail.volume = volume;
+		state.speechDetail.selectedExtractingLang = selectedExtractingLang;
 	},
 	[SAVE_USER_SETTINGS](state, speechInfo) {
 		// console.log(speechInfo);
@@ -337,6 +339,7 @@ const getters = {
 	hasDocs: (state) => state.scannedDocs.length > 0,
 	getSpeechDetail: () => state.speechDetail,
 	getUserSettings: () => state.userSettings,
+	getExtractingLang: () => state.userSettings.speechDetail.extractingLang,
 };
 
 export default new Vuex.Store({

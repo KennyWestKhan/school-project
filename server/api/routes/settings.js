@@ -44,13 +44,21 @@ module.exports = function (router) {
 		}
 		const userId = resp.data._id;
 		console.log("userId", userId);
-		const { volume, rate, pitch, voice, pushNotifications } = req.body;
+		const {
+			volume,
+			rate,
+			pitch,
+			voice,
+			pushNotifications,
+			extractingLang,
+		} = req.body;
 		console.log(req.body);
 		console.log(volume, rate, pitch, voice, pushNotifications);
 		// console.log(req.body);
 		const settingsBody = {
 			userId: userId,
 			userSettings: {
+				extractingLang: extractingLang,
 				speech: {
 					rate: rate,
 					volume: volume,

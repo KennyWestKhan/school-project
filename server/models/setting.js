@@ -22,6 +22,7 @@ const settingsSchema = new mongoose.Schema({
 		ref: "userAccounts",
 	},
 	userSettings: {
+		extractingLang: { type: String, default: "eng" },
 		speech: {
 			rate: { type: Number, default: 1 },
 			volume: { type: Number, default: 10 },
