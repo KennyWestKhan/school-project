@@ -1,6 +1,6 @@
 <template>
   <div class="text-center">
-    <v-dialog :value="dialog" persistent width="300">
+    <v-dialog :value="dialog" width="300">
       <v-card color="primary" dark>
         <v-card-text>
           {{ status }}

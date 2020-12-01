@@ -27,6 +27,21 @@
                 <v-list-item-content>
                   <v-list-item-subtitle
                     ><v-select
+                      v-model="selectedPriority"
+                      :eager="true"
+                      no-data-text="No lang"
+                      hint="What should be prioritized when extracting text from your images"
+                      :items="this.priority"
+                      item-text="name"
+                      item-value="priorityID"
+                      label="Text extraction priority"
+                      menu-props="auto"
+                      prepend-icon="mdi-account-settings"
+                    ></v-select
+                  ></v-list-item-subtitle>
+
+                  <v-list-item-subtitle
+                    ><v-select
                       v-model="selectedExtractingLang"
                       :eager="true"
                       no-data-text="No lang"
@@ -139,6 +154,7 @@ export default {
       speechVoices: [],
       selectedVoice: null,
       selectedExtractingLang: "en",
+      selectedPriority: 0,
       speechInfo: {},
       sound: true,
       e1: "Alice",
@@ -151,6 +167,16 @@ export default {
         { name: "English", langID: "eng" },
         { name: "Chinese", langID: "Ch" },
         { name: "Russian", langID: "Ru" },
+      ],
+      priority: [
+        {
+          name: "Speed",
+          priorityID: 1,
+        },
+        {
+          name: "Accuracy",
+          priorityID: 0,
+        },
       ],
       rules: [(v) => v <= 60 || "Above 60 might harm your hearing"],
     };

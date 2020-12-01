@@ -2,22 +2,6 @@
   <v-container fluid class="" transition="dialog-bottom-transition">
     <v-row>
       <v-col cols="12" sm="6" md="6">
-        <v-card
-          class="pa-2"
-          id="extractedTextImgCard"
-          outlined
-          tile
-          :elevation="elevation"
-        >
-          <v-img
-            class="white--text align-end"
-            max-height="100%"
-            :src="getImageSrc"
-          >
-          </v-img>
-        </v-card>
-      </v-col>
-      <v-col cols="12" sm="6" md="6">
         <v-card class="pa-2" outlined tile :elevation="elevation">
           <span style="float: right" v-show="startAction"
             ><i class="mdi mdi-text-to-speech"></i
@@ -43,6 +27,23 @@
           </v-card-text>
         </v-card>
       </v-col>
+      <v-col cols="12" sm="6" md="6">
+        <v-card
+          class="pa-2"
+          id="extractedTextImgCard"
+          outlined
+          tile
+          :elevation="elevation"
+        >
+          <v-img
+            class="white--text align-end"
+            max-height="100%"
+            :src="getImageSrc"
+          >
+          </v-img>
+        </v-card>
+      </v-col>
+
       <v-col cols="12" sm="12" md="12" id="extractedTextBtns">
         <v-btn
           class="ma-2"

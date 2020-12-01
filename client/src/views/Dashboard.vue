@@ -27,17 +27,18 @@
         <!-- skeleton loader -->
 
         <v-row
+          class="docUploadSpan"
           align="center"
           justify="center"
           v-show="!isLoading && !hasDocs && !isextractingText && !showCamera"
-          style="margin-top: 200px"
         >
           <v-col cols="12" sm="8" md="8">
             <div class="fileuploadsect">
-              <span style="padding: 33px; color: #525658"
-                >You don't have any scanned documents yet. Upload an image to
-                extract text</span
-              >
+              <div style="padding: 33px; color: #525658">
+                You don't have any scanned documents yet. Upload an image to
+                extract text
+              </div>
+
               <Fileupload
                 v-show="!isLoading"
                 style="margin-top: 35px"
@@ -48,6 +49,18 @@
                 @show-progress="showProgress = $event"
               />
             </div>
+            <span
+              id="docUploadSpanQuality"
+              style="
+                display: block;
+                padding: 33px;
+                color: #525658;
+                font-size: 12px;
+              "
+            >
+              *The better the image quality (size, contrast, lightning) the
+              better the recognition result</span
+            >
           </v-col>
         </v-row>
 
@@ -87,6 +100,7 @@
       @fl-btn-settings-popup="settingspopup = true"
       @open-file-upload-diaload="showfileUploadpopup = true"
       @show-camera="showCamera = true"
+      @
     />
     <FileUploadPopup
       :showUploadDialog="showfileUploadpopup"
@@ -204,5 +218,22 @@ export default {
 }
 #hidden-image-ele {
   visibility: hidden;
+}
+
+@media only screen and (max-width: 600px) {
+  #docUploadSpanQuality {
+    margin-top: 85px;
+  }
+}
+
+@media only screen and (min-width: 768px) {
+  /* desktop */
+  #docUploadSpanQuality {
+    margin-top: 85px;
+    float: right;
+  }
+  .docUploadSpan {
+    margin-top: 200px;
+  }
 }
 </style>

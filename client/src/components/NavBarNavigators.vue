@@ -139,8 +139,10 @@ export default {
   methods: {
     ...mapActions(["logout", "getUserSettings"]),
     doLogout() {
-      this.logout();
-      this.$router.push("/login");
+      this.logout().then(() => {
+        // this.$router.push("/login");
+        location.href = "/login";
+      });
     },
   },
 };

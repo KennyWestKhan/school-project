@@ -1,6 +1,6 @@
 <template>
   <v-row justify="center">
-    <v-dialog :value="!!deleteInfo" persistent max-width="400">
+    <v-dialog :value="!!deleteInfo" persistent max-width="390">
       <v-card>
         <v-card-title class="headline">
           Are you sure you want to delete {{ deleteInfo.name }} ?

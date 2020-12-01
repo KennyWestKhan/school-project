@@ -22,7 +22,7 @@ const remoteConnectionPath =
 	"mongodb+srv://kenny:Pideck98@panoptes.k3xpc.mongodb.net/panoptes";
 let path = connectionPath;
 let host = "localhost";
-if (true) {
+if (false) {
 	path = remoteConnectionPath;
 	host = getDeviceIp();
 }

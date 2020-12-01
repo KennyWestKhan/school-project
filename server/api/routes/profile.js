@@ -149,7 +149,7 @@ module.exports = function (router) {
 								token: token,
 							});
 						} else {
-							res.status(404).json({ message: "Incorrect password" });
+							res.status(404).json({ message: "Incorrect credential" });
 						}
 					} else {
 						res.status(404).json({ message: "User doesn't exist" });

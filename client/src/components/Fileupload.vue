@@ -8,7 +8,7 @@
       accept="image/png, image/jpeg, image/bmp"
       label="Text extractor"
       multiple
-      placeholder="Select your image"
+      placeholder="Select your image."
       prepend-icon="mdi-paperclip"
       outlined
       @change="fileChangeHandler"
@@ -62,7 +62,7 @@
 </template>
 
 <script>
-import { createWorker, PSM, OEM } from "tesseract.js";
+import { createWorker, PSM, OEM, setLogging } from "tesseract.js";
 import Standby from "@/components/StandbyPopUp";
 export default {
   name: "Fileupload",
@@ -92,24 +92,34 @@ export default {
       this.isLoading = null;
     },
   },
-  created() {
-    this.initializeWorker();
+  async created() {
+    await this.loadWorker();
   },
   methods: {
-    initializeWorker() {
+    async initializeWorker() {
       this.worker = createWorker({
         logger: (m) => {
           // console.log(m);
           let progress = (m.progress * 100).toFixed(2);
           this.extractingStatusMessage =
             this.rewriteStatusMsg(m.status) + "-" + progress + "%";
-          this.$emit("show-progress", progress);
+          // this.$emit("show-progress", progress);
+        },
+        errorHandler: (e) => {
+          console.log(e);
+          this.terminateWorker(null, true);
+          alert(e);
         },
       });
+      await this.worker.load();
+      await this.worker.loadLanguage("eng");
     },
     rewriteStatusMsg(msg) {
       console.log(msg);
       switch (msg) {
+        case "initialized api":
+          msg = "Waking up the giants";
+          break;
         case "loading tesseract core":
           msg = "Breaking ice. Please wait...";
           break;
@@ -140,14 +150,16 @@ export default {
       const src = URL.createObjectURL(this.srcFile);
       img.id = "hidden-image-ele";
       img.src = src;
-      if (!this.worker) {
-        this.initializeWorker();
-      }
-      await this.worker.load();
-      await this.worker.loadLanguage("eng");
-      await this.worker.initialize("eng", OEM.LSTM_ONLY);
+      await this.loadWorker();
+      setLogging(true);
+      // LSTM_ONLY
+      // TESSERACT_ONLY
+      // TESSERACT_LSTM_COMBINED
+      console.log(OEM.LSTM_ONLY);
+      await this.worker.initialize("eng", OEM.TESSERACT_LSTM_COMBINED);
       await this.worker.setParameters({
         tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
+        preserve_interword_spaces: 1,
       });
       const {
         data: { text },
@@ -165,9 +177,26 @@ export default {
         this.dismissPopUp = true;
         this.extractingStatusMessage = "Sorry! Couldn't extract the text";
       }
+      this.terminateWorker(src);
+    },
+    async loadWorker() {
+      if (!this.worker) {
+        await this.initializeWorker();
+      }
+    },
+    terminateWorker(src, proceed) {
+      console.log("terminating");
+      proceed = proceed || "";
       this.$emit("show-progress", 0);
-      URL.revokeObjectURL(src);
       this.worker.terminate();
+      this.worker = null;
+      if (src) {
+        URL.revokeObjectURL(src);
+      }
+      if (proceed) {
+        this.$emit("cancel-extraction");
+        this.$emit("close-upload-dialog");
+      }
     },
     fileChangeHandler(event) {
       this.srcFile = event[0];
