@@ -6,6 +6,10 @@
 npm install
 ```
 
+```
+cd server
+```
+
 ### Compiles and hot-reloads for development
 
 ```
