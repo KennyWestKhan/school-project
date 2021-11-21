@@ -113,7 +113,7 @@
             <v-divider></v-divider>
             <v-list three-line subheader>
               <v-subheader>General</v-subheader>
-              <v-list-item>
+              <!-- <v-list-item>
                 <v-list-item-action>
                   <v-checkbox v-model="pushNotifications"></v-checkbox>
                 </v-list-item-action>
@@ -124,7 +124,7 @@
                     done</v-list-item-subtitle
                   >
                 </v-list-item-content>
-              </v-list-item>
+              </v-list-item> -->
               <v-list-item
                 ><v-list-item-content style="cursor: pointer">
                   <v-list-item-title

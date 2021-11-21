@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-card class="mx-auto" max-width="344">
-      <v-img :src="docImage" height="200px"></v-img>
+      <v-img :src="getImgUrl('ocr.png')" height="200px"></v-img>
 
       <v-card-title>
         {{ truncateExtractedText(document.title.name, "26") }}
@@ -76,7 +76,7 @@ export default {
     show: false,
     showStandbyPopUp: false,
     statusMessage: "",
-    docImage: "https://cdn.vuetifyjs.com/images/cards/sunshine.jpg",
+    docImage: "../assets/ocr.png",
     confirmDelete: false,
     selectedDoc: null,
   }),
@@ -93,7 +93,9 @@ export default {
   computed: {},
   methods: {
     ...mapActions(["copyText", "deleteDoc"]),
-
+    getImgUrl(imgName = "ocr.png") {
+      return require('../assets/'+imgName)
+    },
     truncateExtractedText: function (str, num) {
       num = num || 150;
       if (str.length <= num) {

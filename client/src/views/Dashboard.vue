@@ -89,6 +89,7 @@
           <Extraction
             @cancel-extraction="isextractingText = false"
             :extractedText="extractedText"
+            :extractedLines="extractedLines"
             :imgSrc="extractedTextImgSrcDetails"
           />
         </v-row>
@@ -107,6 +108,7 @@
       @close-upload-dialog="showfileUploadpopup = false"
       @src-file="extractedTextImgSrcDetails = $event"
       @extracted-text="extractedText = $event"
+      @extracted-lines="extractedLines = $event"
       @is-extracting-text="isextractingText = $event"
       @show-progress="showProgress = $event"
     />
@@ -156,6 +158,7 @@ export default {
       showCamera: false,
       filename: "",
       extractedText: "",
+      extractedLines: "",
       extractedTextImgSrcDetails: null,
       search: "",
       settingspopup: false,

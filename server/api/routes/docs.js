@@ -66,6 +66,34 @@ module.exports = function (router) {
 				})
 			);
 	});
+	router.get("/search/:query", function (req, res) {
+		const resp = userIsAuth(req, res);
+		if (!resp.auth) {
+			return res.status(401).json({
+				message: resp.message,
+			});
+		}
+		const searchQuery = req.params.query;
+		userDocuments
+			.find({ userId: mongoose.Types.ObjectId(userId), $text: { $search: searchQuery } }, { userId: 0, __v: 0 })
+			.sort([["createdOn", -1]])
+			.exec()
+			.then((userDocs) => {
+				if (userDocs && userDocs.length > 0) {
+					res
+						.status(200)
+						.json({ message: "User documents", documents: userDocs });
+				} else {
+					res.status(404).json({ message: "No user documents" });
+				}
+			})
+			.catch((err) =>
+				res.status(500).json({
+					message: "Error finding documents for user",
+					error: err,
+				})
+			);
+	});
 	router.get("/documents", function (req, res, next) {
 		const resp = userIsAuth(req, res);
 		if (!resp.auth) {

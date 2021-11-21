@@ -1,31 +1,12 @@
 <template>
   <v-container fluid class="" transition="dialog-bottom-transition">
     <v-row>
+      <span>{{extractedLines}}</span>
       <v-col cols="12" sm="6" md="6">
-        <v-card class="pa-2" outlined tile :elevation="elevation">
           <span style="float: right" v-show="startAction"
             ><i class="mdi mdi-text-to-speech"></i
           ></span>
-          <!-- <v-textarea
-            class="extractedTextArea"
-            counter
-            label="Extracted text"
-            :value="extractedText"
-            readonly
-            outlined
-            autofocus
-            style="height: 500px"
-          ></v-textarea> -->
-          <v-card-text
-            class="text--primary"
-            max-height="500px"
-            contentEditable="true"
-          >
-            <div style="white-space: pre-wrap" id="extractedTextDiv">
-              {{ extractedText }}
-            </div>
-          </v-card-text>
-        </v-card>
+          <tinymce id="extractedTextDiv"  v-model="text" :other_options="options" name="extractedTextDiv"></tinymce>
       </v-col>
       <v-col cols="12" sm="6" md="6">
         <v-card
@@ -38,7 +19,7 @@
           <v-img
             class="white--text align-end"
             max-height="100%"
-            :src="getImageSrc"
+            :src="getImageSrc()"
           >
           </v-img>
         </v-card>
@@ -140,6 +121,7 @@
 <script>
 import { mapGetters, mapActions } from "vuex";
 import Standby from "@/components/StandbyPopUp";
+import tinymce from 'vue-tinymce-text-editor'
 import * as axios from "axios";
 export default {
   name: "Extraction",
@@ -159,7 +141,12 @@ export default {
       saveDialog: false,
       docTitle: "",
       docCaption: "",
+      text: "",
       docStatus: null,
+      options: {
+          language_url: this.langs || '',
+          height: this.height || 550
+      },
       btnOpts: [
         {
           name: "READ",
@@ -182,39 +169,53 @@ export default {
       },
     };
   },
-  props: ["extractedText", "imgSrc"],
-  components: { Standby },
+  props: ["extractedText", "extractedLines", "imgSrc", "files", "langs"],
+  components: { Standby, tinymce },
   computed: {
-    getImageSrc() {
-      let imgsrc;
-      if (this.imgSrc) {
-        imgsrc = URL.createObjectURL(this.imgSrc);
-        URL.revokeObjectURL(this.imgSrc);
-      } else {
-        imgsrc = "https://cdn.vuetifyjs.com/images/cards/sunshine.jpg";
-      }
-      return imgsrc;
-    },
     getHeight(elementId) {
       console.log(elementId);
       const elementDetails = document.getElementById(`'${elementId}'`);
       return elementDetails.offsetHeight;
     },
-
     ...mapGetters(["getSpeechDetail"]),
   },
   mounted() {
     this.$nextTick(async function () {
+      this.getUserSettings();
+      console.log(this.extractedLines)
+      this.text = this.extractedText;
+      this.height = this.getHeight("extractedTextImgCard");
+
       const nameWithoutExt = this.removeFileExtension(this.imgSrc.name);
       this.docTitle = nameWithoutExt ? nameWithoutExt : this.imgSrc.name;
-      this.getUserSettings();
+      
+      console.log(this.height)
     });
+  },
+  beforeDestroy() {
+      if(this.text) {
+        // alert("unsaved doc");
+      }
   },
   methods: {
     ...mapActions(["getUserSettings", "getUserDocs"]),
     removeFileExtension(filename) {
       console.log(filename);
       return filename.split(".").slice(0, -1).join(".");
+    },
+    getImageSrc() {
+      let imgsrc;
+      console.log("i love",this.imgSrc)
+      if (this.imgSrc) {
+        imgsrc = URL.createObjectURL(this.imgSrc);
+        URL.revokeObjectURL(this.imgSrc);
+      } else {
+        imgsrc = "/Users/dev/Documents/projects/panoptes/client/src/assets/testocr.png";
+      }
+      return imgsrc;
+    },
+    getImgUrl(imgName = "ocr.png") {
+      return require('../assets/'+imgName)
     },
     async readExtractedText() {
       this.toggleAction();

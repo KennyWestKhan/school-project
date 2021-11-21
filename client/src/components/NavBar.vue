@@ -19,14 +19,15 @@
         clearable
         color="white"
         hide-details
-        v-on:keyup.13="searchDocument()"
+        @keydown="searchDocument()"
+        @keyup.13="searchDocument()"
       ></v-text-field>
     </v-row>
   </v-app-bar>
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapGetters, mapActions } from "vuex";
 export default {
   name: "NavBar",
   props: {
@@ -40,16 +41,26 @@ export default {
     return {
       search: "",
       appName: "Panoptes",
+      documents: [],
     };
   },
   methods: {
+    ...mapActions(["getUserDocs"]),
     searchDocument() {
-      if (!this.search) this.getScannedDocs;
+      if (!this.search) {
+        this.getUserDocs();
+        return;
+      }
       const search = this.search.toLowerCase();
-      this.getScannedDocs.filter((item) => {
-        const text = item.title.name.toLowerCase();
-        this.getScannedDocs = text.indexOf(search) > -1;
+      const results = this.getScannedDocs.filter((item) => {
+        const title = item.title.name.toLowerCase();
+        const content = item.extractedText.toLowerCase();
+        const caption = item.title.caption.toLowerCase();
+        console.log({content})
+        return title.indexOf(search) != -1 || content.indexOf(search) != -1 || caption.indexOf(search) != -1;
+        // console.log({searchHit})
       });
+      if(results){this.$store.commit("save_scanned_document", results)}else{this.getUserDocs();}
     },
   },
   computed: {

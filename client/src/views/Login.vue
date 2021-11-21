@@ -102,7 +102,7 @@
                     <div>
                       <v-card-text :class="`${fgColor}--text`">
                         <h1 class="text-center headline mb-3">
-                          Welcome to Panoptes
+                          Welcome
                         </h1>
                         <!-- <h4 class="text-center headline mb-3">New user?</h4> -->
                         <h5 class="text-center overline mb-3">
@@ -322,9 +322,9 @@ export default {
   data: () => ({
     loading: false,
     step: 1,
-    username: "cole",
+    username: "",
     email: "",
-    password: "cole",
+    password: "",
     errorMsg: null,
     terms: false,
     platformUsage: "",
@@ -393,9 +393,6 @@ export default {
           .then((resp) => {
             if (this.isLoggedIn) {
               console.log(resp);
-              //   this.toastedObj.duration = "2000";
-              //   this.toastedObj.icon = "thumbs-up";
-              //   this.$toasted.success(resp, this.toastedObj);
               this.goToDashBoard();
             } else {
               //   this.showError(resp);
@@ -404,13 +401,15 @@ export default {
           .catch((error) => {
             console.log(error);
             this.errorMsg = error;
-            // this.showError(error);
           })
           .finally(() => (this.loading = false));
       }
     },
     goToDashBoard() {
       this.$router.push(`/dashboard/${this.username}`);
+    },
+    go() {
+      this.$router.push(`/login`);
     },
     checkForm() {
       let msg = "";
@@ -438,7 +437,7 @@ export default {
           age: this.age,
           usage: this.platformUsage,
         })
-          .then(() => this.goToDashBoard())
+          .then(() => this.step = 1)
           .catch((error) => {
             console.log("reg");
             console.log(error);

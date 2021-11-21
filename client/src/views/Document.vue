@@ -5,7 +5,7 @@
         @show-file-uploadpopup="showfileUploadpopup = $event"
         @settings-popup="settingspopup = true"
       />
-      <v-main>
+      <v-main v-if="extractedText">
         <v-container fluid class="grey lighten-5">
           <v-row>
             <Extraction
@@ -43,20 +43,21 @@ export default {
   methods: {
     ...mapActions(["getDocumentDetails"]),
     doCancelExtraction() {
-      // this.isextractingText = false;
       window.location = "/";
     },
   },
   async created() {
     this.documentId = this.$route.params.id;
-
-    await this.getDocumentDetails(this.documentId).then((res) => {
-      const { title, extractedText, createdOn } = res;
-      this.name = title.name;
-      this.caption = title.caption;
-      this.extractedText = extractedText;
-      this.createdOn = createdOn;
-    });
+    try {
+        const res = await this.getDocumentDetails(this.documentId);
+        const { title, extractedText, createdOn } = res;
+        this.name = title.name;
+        this.caption = title.caption;
+        this.extractedText = extractedText;
+        this.createdOn = createdOn;
+    } catch (error) {
+      alert("Error retrieving file");
+    }
   },
 };
 </script>

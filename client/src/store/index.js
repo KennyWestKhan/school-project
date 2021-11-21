@@ -103,6 +103,26 @@ const actions = {
 				});
 		});
 	},
+	search({ commit }, searchQuery) {
+		return new Promise((resolve, reject) => {
+			axios
+				.get("/search/" + searchQuery, {
+					headers: {
+						Authorization: state.token,
+					},
+				})
+				.then((res) => {
+					const parsedResponse = dataService.parseList(res, 200);
+					const { documentDetails } = parsedResponse;
+					commit(SAVE_DOC_INFO, documentDetails);
+					resolve(documentDetails);
+				})
+				.catch((err) => {
+					console.log(err);
+					reject();
+				});
+		});
+	},
 	getDocumentDetails({ commit }, docId) {
 		return new Promise((resolve, reject) => {
 			axios

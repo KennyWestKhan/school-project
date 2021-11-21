@@ -38,9 +38,9 @@
             >
           </v-list-item-content>
         </v-list-item>
-        <v-subheader class="mt-4 grey--text text--darken-1"
+        <!-- <v-subheader class="mt-4 grey--text text--darken-1"
           >TEAM MEMBERS</v-subheader
-        >
+        > -->
 
         <v-list v-if="this.team.length > 0">
           <v-list-item v-for="item in team" :key="'team' + item._id" link>
@@ -114,7 +114,7 @@ export default {
       userprofile: {},
       platforms: [
         { icon: "mdi-folder", text: " Documents", link: "/" },
-        { icon: "mdi-clipboard-text", text: " Extracted texts", link: "" },
+        // { icon: "mdi-clipboard-text", text: " Extracted texts", link: "" },
       ],
       drawer: true,
     };

@@ -27,18 +27,6 @@
         </span>
       </template>
     </v-file-input>
-    <!-- <v-btn
-      :loading="isLoading"
-      :disabled="files.length == 0"
-      color="blue-grey"
-      class="ma-2 white--text"
-      fab
-      @click="loader = !isLoading"
-      style="float: right"
-    >
-      <v-icon dark> mdi-cloud-upload </v-icon>
-    </v-btn> -->
-
     <v-btn
       class="ma-2"
       :loading="isLoading"
@@ -62,7 +50,7 @@
 </template>
 
 <script>
-import { createWorker, PSM, OEM, setLogging } from "tesseract.js";
+import { createWorker /*, PSM, OEM, setLogging*/ } from "tesseract.js";
 import Standby from "@/components/StandbyPopUp";
 export default {
   name: "Fileupload",
@@ -81,6 +69,7 @@ export default {
         "Image size should be less than 2 MB!",
     ],
     files: [],
+    text: "",
   }),
   watch: {
     loader() {
@@ -93,26 +82,18 @@ export default {
     },
   },
   async created() {
-    await this.loadWorker();
+    // await this.loadWorker();
   },
   methods: {
     async initializeWorker() {
       this.worker = createWorker({
-        logger: (m) => {
-          // console.log(m);
-          let progress = (m.progress * 100).toFixed(2);
-          this.extractingStatusMessage =
-            this.rewriteStatusMsg(m.status) + "-" + progress + "%";
-          // this.$emit("show-progress", progress);
-        },
-        errorHandler: (e) => {
-          console.log(e);
-          this.terminateWorker(null, true);
-          alert(e);
-        },
+        logger: (m) => console.log(m),
       });
-      await this.worker.load();
-      await this.worker.loadLanguage("eng");
+      (async () => {
+        await this.worker.load();
+        await this.worker.loadLanguage("eng");
+        await this.worker.initialize("eng");
+      })();
     },
     rewriteStatusMsg(msg) {
       console.log(msg);
@@ -121,19 +102,19 @@ export default {
           msg = "Waking up the giants";
           break;
         case "loading tesseract core":
-          msg = "Breaking ice. Please wait...";
+          msg = `Please wait, ${this.$route.params.username}. Loading system core.`;
           break;
         case "initializing tesseract":
-          msg = "creating world peace";
+          msg = "Initializing logic";
           break;
         case "initialized tesseract":
-          msg = "Retrieved the infinity stones";
+          msg = "Extraction logic initialized";
           break;
-        case "loading language traineddata":
-          msg = "Learning our ABCs";
-          break;
+        // case "loading language traineddata":
+        //   msg = "Learning our ABCs";
+        //   break;
         case "recognizing text":
-          msg = "Extracting text from " + this.filename;
+          msg = `Extracting text from image (${this.filename})`;
           break;
         default:
           break;
@@ -150,34 +131,43 @@ export default {
       const src = URL.createObjectURL(this.srcFile);
       img.id = "hidden-image-ele";
       img.src = src;
-      await this.loadWorker();
-      setLogging(true);
-      // LSTM_ONLY
-      // TESSERACT_ONLY
-      // TESSERACT_LSTM_COMBINED
-      console.log(OEM.LSTM_ONLY);
-      await this.worker.initialize("eng", OEM.TESSERACT_LSTM_COMBINED);
-      await this.worker.setParameters({
-        tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
-        preserve_interword_spaces: 1,
+      const worker = createWorker({
+        logger: (m) => {
+          let progress = (m.progress * 100).toFixed(2);
+          this.extractingStatusMessage =
+            this.rewriteStatusMsg(m.status) + "-" + progress + "%";
+        },
+        errorHandler: (e) => {
+          console.log(e);
+          this.terminateWorker(null, true);
+          alert(e);
+        },
       });
-      const {
-        data: { text },
-      } = await this.worker.recognize(img);
-      console.log(text);
 
-      if (text) {
-        this.$emit("is-extracting-text", true);
-        this.showStandbyPopUp = false;
-
-        this.$emit("src-file", this.srcFile);
-        this.$emit("extracted-text", text);
-        this.$emit("close-upload-dialog");
-      } else {
-        this.dismissPopUp = true;
-        this.extractingStatusMessage = "Sorry! Couldn't extract the text";
-      }
-      this.terminateWorker(src);
+      (async () => {
+        await worker.load();
+        await worker.loadLanguage("eng");
+        await worker.initialize("eng");
+        const {
+          data: { text, symbols, words, lines },
+        } = await worker.recognize(img);
+        console.log(text);
+        if (text) {
+          this.$emit("is-extracting-text", true);
+          this.showStandbyPopUp = false;
+          this.$emit("src-file", this.srcFile);
+          this.$emit("extracted-text", text);
+          this.$emit("extracted-symbols", symbols);
+          this.$emit("extracted-words", words);
+          this.$emit("extracted-lines", lines);
+          this.$emit("close-upload-dialog");
+        } else {
+          this.dismissPopUp = true;
+          this.extractingStatusMessage = "Sorry! Couldn't extract the text";
+        }
+        await worker.terminate();
+      })();
+      // this.terminateWorker(src);
     },
     async loadWorker() {
       if (!this.worker) {
@@ -200,7 +190,7 @@ export default {
     },
     fileChangeHandler(event) {
       this.srcFile = event[0];
-      this.$emit("file-changed", event[0]);
+      this.$emit("file-changed", this.srcFile);
     },
   },
 };

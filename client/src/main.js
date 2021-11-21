@@ -5,7 +5,6 @@ import store from "./store";
 import vuetify from "./plugins/vuetify";
 import titleMixin from "./mixins/titleMixin";
 import axios from "axios";
-// import { WebCam } from "vue-web-cam";
 import { API } from "../src/shared";
 
 axios.defaults.baseURL = API;
