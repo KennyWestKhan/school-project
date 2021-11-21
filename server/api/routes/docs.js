@@ -1,5 +1,8 @@
 const mongoose = require("mongoose");
+const multer  = require('multer')
+const upload = multer({ dest: 'uploads/' })
 const userDocuments = require("../../models/document");
+const fileDocuments = require("../../models/file");
 const { userIsAuth } = require("../../shared");
 
 module.exports = function (router) {
@@ -126,36 +129,46 @@ module.exports = function (router) {
 				})
 			);
 	});
-	router.post("/document", function (req, res, next) {
+	router.post("/document", upload.single("file") , async function (req, res, next) {
+
 		const resp = userIsAuth(req, res);
 		if (!resp.auth) {
 			return res.status(401).json({
 				message: resp.message,
 			});
 		}
-		const userId = resp.data._id;
-		const { extractedText, caption, title, status } = req.body;
 
-		const docsBody = {
-			userId: userId,
-			// fileId: "345567890",
-			extractedText: extractedText,
-			public: status === "Public",
-			title: {
-				name: title,
-				caption: caption,
-			},
-		};
-		console.log(docsBody);
 		try {
-			const query = { userId: userId };
-			userDocuments.create(docsBody, function (err, doc) {
-				// console.log(err);
-				console.log(doc);
-				if (err) return res.status(500).json("error");
-				res.status(200).json({ message: "User documents successfully saved" });
-			});
+			const userId = resp.data._id;
+
+			const fileInfo = await fileDocuments.create({userId, metadata: req.file });
+
+			if(fileInfo){
+				console.log({fileInfo})
+				const { documentData } = req.body;
+				const { extractedText, caption, title, status } = JSON.parse(documentData)
+
+				const docsBody = {
+					userId,
+					fileId: fileInfo._id,
+					extractedText,
+					public: status === "Public",
+					title: {
+						name: title,
+						caption: caption,
+					},
+				};
+				await userDocuments.create(docsBody, function (err, userDocument) {
+					console.log({err});
+					if (err) return res.status(500).json("error saving document");
+					res.status(200).json({ message: "User documents successfully saved" });
+				});
+			}else {
+				return res.status(500).json("error saving file");
+			}
+			
 		} catch (error) {
+			console.log({error})
 			return res.status(400).json(error);
 		}
 	});

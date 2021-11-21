@@ -44,6 +44,7 @@
     <Standby
       :dialog="showStandbyPopUp"
       :status="extractingStatusMessage"
+      :percentage="progressPercentage"
       :canDismiss="dismissPopUp"
     />
   </div>
@@ -57,10 +58,11 @@ export default {
   components: { Standby },
   data: () => ({
     showStandbyPopUp: false,
-    dismissPopUp: null,
+    dismissPopUp: false,
     srcFile: null,
     isLoading: false,
     extractingStatusMessage: "",
+    progressPercentage: "",
     worker: null,
     rules: [
       (value) =>
@@ -96,7 +98,6 @@ export default {
       })();
     },
     rewriteStatusMsg(msg) {
-      console.log(msg);
       switch (msg) {
         case "initialized api":
           msg = "Waking up the giants";
@@ -122,7 +123,6 @@ export default {
       return msg;
     },
     async doTextExtraction() {
-      console.log("extracting");
       this.showStandbyPopUp = true;
 
       let img = document.createElement("img");
@@ -134,11 +134,11 @@ export default {
       const worker = createWorker({
         logger: (m) => {
           let progress = (m.progress * 100).toFixed(2);
+          this.progressPercentage = progress;
           this.extractingStatusMessage =
             this.rewriteStatusMsg(m.status) + "-" + progress + "%";
         },
         errorHandler: (e) => {
-          console.log(e);
           this.terminateWorker(null, true);
           alert(e);
         },
@@ -151,7 +151,6 @@ export default {
         const {
           data: { text, symbols, words, lines },
         } = await worker.recognize(img);
-        console.log(text);
         if (text) {
           this.$emit("is-extracting-text", true);
           this.showStandbyPopUp = false;
@@ -175,7 +174,6 @@ export default {
       }
     },
     terminateWorker(src, proceed) {
-      console.log("terminating");
       proceed = proceed || "";
       this.$emit("show-progress", 0);
       this.worker.terminate();

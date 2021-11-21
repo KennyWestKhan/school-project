@@ -5,9 +5,11 @@
         <v-card-text>
           {{ status }}
           <v-progress-linear
-            indeterminate
+            :stream="true"
             color="white"
             class="mb-0"
+            :light="true"
+            :buffer-value="percentage"
           ></v-progress-linear>
         </v-card-text>
       </v-card>
@@ -28,6 +30,10 @@ export default {
     status: {
       type: String,
       default: "Please stand by",
+    },
+    percentage: {
+      type: String,
+      default: ""
     },
     canDismiss: {
       type: Boolean,

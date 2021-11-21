@@ -169,11 +169,10 @@ export default {
       },
     };
   },
-  props: ["extractedText", "extractedLines", "imgSrc", "files", "langs"],
+  props: ["extractedText", "extractedLines", "imgSrc", "langs"],
   components: { Standby, tinymce },
   computed: {
     getHeight(elementId) {
-      console.log(elementId);
       const elementDetails = document.getElementById(`'${elementId}'`);
       return elementDetails.offsetHeight;
     },
@@ -182,14 +181,11 @@ export default {
   mounted() {
     this.$nextTick(async function () {
       this.getUserSettings();
-      console.log(this.extractedLines)
       this.text = this.extractedText;
       this.height = this.getHeight("extractedTextImgCard");
 
       const nameWithoutExt = this.removeFileExtension(this.imgSrc.name);
       this.docTitle = nameWithoutExt ? nameWithoutExt : this.imgSrc.name;
-      
-      console.log(this.height)
     });
   },
   beforeDestroy() {
@@ -200,12 +196,10 @@ export default {
   methods: {
     ...mapActions(["getUserSettings", "getUserDocs"]),
     removeFileExtension(filename) {
-      console.log(filename);
       return filename.split(".").slice(0, -1).join(".");
     },
     getImageSrc() {
       let imgsrc;
-      console.log("i love",this.imgSrc)
       if (this.imgSrc) {
         imgsrc = URL.createObjectURL(this.imgSrc);
         URL.revokeObjectURL(this.imgSrc);
@@ -237,7 +231,6 @@ export default {
         speech.text = textInDiv;
         speech.voice = voices[voice];
         try {
-          console.log(speech);
           window.speechSynthesis.speak(speech);
         } catch (error) {
           //alert here
@@ -248,7 +241,6 @@ export default {
       }
 
       speech.onend = () => {
-        console.log("Done Speaking");
         this.actionText = "READ";
         this.startAction = false;
         this.initialisePopUp("stop");
@@ -290,25 +282,25 @@ export default {
     saveDoc() {
       console.log("SAVING");
       if (this.docTitle) {
+        const formData = new FormData();
+        formData.append('file', this.imgSrc);
         const userDocs = {
           extractedText: this.extractedText,
           caption: this.docCaption,
           title: this.docTitle,
-          status: this.docStatus,
+          status: this.docStatus
         };
+        formData.append("documentData", JSON.stringify(userDocs));
         let payload = {
           visibility: true,
         };
         let message;
+        const config = { headers: { 'Content-Type': 'multipart/form-data', 'Authorization': localStorage.getItem("token") } };
+        // console.log({formData});
         axios
-          .post("/document", userDocs, {
-            headers: {
-              Authorization: localStorage.getItem("token"),
-            },
-          })
+          .post("/document", formData, config)
           .then((response) => {
             if (response.status === 200) {
-              console.log(response.data);
               this.stopRead;
               payload.message = message = response.data.message;
               payload.color = "green";

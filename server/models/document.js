@@ -5,10 +5,10 @@ const documentSchema = new mongoose.Schema({
 		type: mongoose.Schema.Types.ObjectId,
 		ref: "userAccounts",
 	},
-	// fileId: {
-	// 	type: mongoose.Schema.Types.ObjectId,
-	// 	ref: "files",
-	// },
+	fileId: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: "userfiles",
+	},
 	extractedText: { type: String, required: true },
 	public: { type: Boolean, default: false },
 	title: {
