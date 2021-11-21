@@ -52,6 +52,7 @@ module.exports = function (router) {
 		};
 		userDocuments
 			.findOne(qry, { userId: 0, __v: 0 })
+			.populate('fileId')
 			.exec()
 			.then((userDoc) => {
 				if (userDoc) {
@@ -108,9 +109,9 @@ module.exports = function (router) {
 		const qry = {
 			userId: mongoose.Types.ObjectId(userId),
 		};
-		console.log("userid ", userId);
 		userDocuments
 			.find(qry, { userId: 0, __v: 0 })
+			.populate('fileId')
 			.sort([["createdOn", -1]])
 			.exec()
 			.then((userDocs) => {

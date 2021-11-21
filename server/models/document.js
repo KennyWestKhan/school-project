@@ -7,7 +7,7 @@ const documentSchema = new mongoose.Schema({
 	},
 	fileId: {
 		type: mongoose.Schema.Types.ObjectId,
-		ref: "userfiles",
+		ref: "userFiles",
 	},
 	extractedText: { type: String, required: true },
 	public: { type: Boolean, default: false },
