@@ -360,6 +360,7 @@ const getters = {
 	getSpeechDetail: () => state.speechDetail,
 	getUserSettings: () => state.userSettings,
 	getExtractingLang: () => state.userSettings.speechDetail.extractingLang,
+	getFileDetails: () => state.doc.fileId
 };
 
 export default new Vuex.Store({

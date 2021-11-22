@@ -176,16 +176,17 @@ export default {
       const elementDetails = document.getElementById(`'${elementId}'`);
       return elementDetails.offsetHeight;
     },
-    ...mapGetters(["getSpeechDetail"]),
+    ...mapGetters(["getSpeechDetail", "getFileDetails"]),
   },
   mounted() {
     this.$nextTick(async function () {
       this.getUserSettings();
       this.text = this.extractedText;
-      this.height = this.getHeight("extractedTextImgCard");
-
-      const nameWithoutExt = this.removeFileExtension(this.imgSrc.name);
-      this.docTitle = nameWithoutExt ? nameWithoutExt : this.imgSrc.name;
+      // this.height = this.getHeight("extractedTextImgCard");
+      let file = this.imgSrc && this.imgSrc.name;
+      file = (file) ? file : this.getFileDetails.metadata.filename;
+      const nameWithoutExt = this.removeFileExtension(file);
+      this.docTitle = nameWithoutExt ? nameWithoutExt : file;
     });
   },
   beforeDestroy() {
@@ -203,6 +204,12 @@ export default {
       if (this.imgSrc) {
         imgsrc = URL.createObjectURL(this.imgSrc);
         URL.revokeObjectURL(this.imgSrc);
+      } else if(!this.imgSrc && this.getFileDetails) {
+        const { filename, /*mimetype,destination,  originalname*/ } = this.getFileDetails.metadata; 
+        // const extension =  originalname.split('.').pop();
+        // console.log({extension})
+        imgsrc = require(`../../../server/uploads/${filename}`);
+        console.log({filename})
       } else {
         imgsrc = "/Users/dev/Documents/projects/panoptes/client/src/assets/testocr.png";
       }

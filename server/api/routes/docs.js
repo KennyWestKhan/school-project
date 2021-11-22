@@ -1,6 +1,15 @@
 const mongoose = require("mongoose");
 const multer  = require('multer')
-const upload = multer({ dest: 'uploads/' })
+const storage = multer.diskStorage({
+    destination: function (req, file, callback) {
+        callback(null, 'uploads/');
+    },
+    filename: function (req, file, callback) {
+        callback(null, file.originalname);
+    }
+});
+const upload = multer({ storage: storage })
+
 const userDocuments = require("../../models/document");
 const fileDocuments = require("../../models/file");
 const { userIsAuth } = require("../../shared");
